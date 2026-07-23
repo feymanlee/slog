@@ -1,0 +1,114 @@
+# golangci-lint 配置文件
+# 文档: https://golangci-lint.run/usage/configuration/
+
+version: "2"
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+output:
+  formats:
+    text:
+      path: stdout
+      print-issued-lines: true
+      print-linter-name: true
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+    - gci
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/darkit/slog
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/darkit/slog)
+
+linters:
+  default: all
+  disable:
+    - exhaustruct
+    - depguard
+    - tagliatelle
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - cyclop
+
+  settings:
+    revive:
+      confidence: 0.8
+      rules:
+        - name: var-naming
+        - name: package-comments
+        - name: exported
+        - name: var-declaration
+        - name: blank-imports
+
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+
+    gocyclo:
+      min-complexity: 15
+
+    funlen:
+      lines: 100
+      statements: 50
+
+    lll:
+      line-length: 120
+
+    unused:
+      exported-fields-are-used: false
+
+    misspell:
+      locale: US
+
+    gosec:
+      severity: medium
+      confidence: medium
+      excludes:
+        - G104
+
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: false
+
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+      exclude-functions:
+        - fmt:*
+        - io/ioutil:Read*
+
+    ireturn:
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        - generic
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+severity:
+  default: error
+  rules:
+    - linters:
+        - dupl
+      severity: info
+    - linters:
+        - gomnd
+      severity: warning

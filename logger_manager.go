@@ -1,0 +1,332 @@
+package slog
+
+import (
+	"context"
+	"io"
+	"log/slog"
+	"os"
+	"sync"
+	"sync/atomic"
+)
+
+// LoggerManager 全局日志管理器，负责管理所有logger实例
+// 解决全局状态混乱问题，实现实例隔离
+type LoggerManager struct {
+	mu            sync.RWMutex
+	defaultLogger *Logger
+	instances     map[string]*Logger
+	config        *GlobalConfig
+	initialized   atomic.Bool
+}
+
+// GlobalConfig 全局配置，与实例配置分离
+type GlobalConfig struct {
+	DefaultWriter  io.Writer
+	DefaultLevel   Level
+	DefaultNoColor bool
+	DefaultSource  bool
+	EnableText     bool
+	EnableJSON     bool
+}
+
+// defaultGlobalConfig 默认全局配置
+var defaultGlobalConfig = &GlobalConfig{
+	DefaultWriter:  os.Stdout,
+	DefaultLevel:   LevelInfo,
+	DefaultNoColor: false,
+	DefaultSource:  false,
+	EnableText:     true,
+	EnableJSON:     false,
+}
+
+// globalManager 全局管理器实例
+var globalManager = &LoggerManager{
+	instances: make(map[string]*Logger),
+	config:    defaultGlobalConfig,
+}
+
+// GetManager 获取全局管理器实例
+func GetManager() *LoggerManager {
+	return globalManager
+}
+
+// GetDefault 获取默认logger实例
+// 线程安全，支持延迟初始化
+func (lm *LoggerManager) GetDefault() *Logger {
+	lm.mu.RLock()
+	if lm.defaultLogger != nil {
+		defer lm.mu.RUnlock()
+		return lm.defaultLogger
+	}
+	lm.mu.RUnlock()
+
+	// 需要创建默认实例
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	// 双重检查
+	if lm.defaultLogger != nil {
+		return lm.defaultLogger
+	}
+
+	// 创建默认logger
+	lm.defaultLogger = lm.createLoggerWithConfig("default", lm.config)
+	return lm.defaultLogger
+}
+
+// setDefaultSlogLogger 将标准库 slog.Logger 适配成本包默认 Logger。
+func (lm *LoggerManager) setDefaultSlogLogger(logger *SlogLogger) {
+	if logger == nil {
+		return
+	}
+
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	cfg := DefaultConfig()
+	cfg.SetEnableText(true)
+	cfg.SetEnableJSON(false)
+	lineage := newLoggerLineage()
+	wrapped := slog.New(newAddonsHandler(logger.Handler(), ext, lineage))
+	lm.defaultLogger = &Logger{
+		text:         wrapped,
+		ctx:          context.Background(),
+		level:        levelVar.Level(),
+		levelVar:     newLoggerLevel(levelVar.Level(), false),
+		ext:          ext,
+		lineage:      lineage,
+		config:       cfg,
+		renderConfig: outputRenderConfig{},
+	}
+}
+
+// setDefaultLogger 设置本包增强 Logger 为默认实例。
+func (lm *LoggerManager) setDefaultLogger(logger *Logger) {
+	if logger == nil {
+		return
+	}
+
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+	logger.levelVar = newLoggerLevel(levelVar.Level(), false)
+	logger.level = levelVar.Level()
+	logger.ext = ext
+	logger.extScoped = false
+	if logger.lineage == nil {
+		logger.lineage = newLoggerLineage()
+	}
+	lm.rebuildLoggerHandlers(logger)
+	lm.defaultLogger = logger
+}
+
+func (lm *LoggerManager) rebuildLoggerHandlers(logger *Logger) {
+	if logger == nil {
+		return
+	}
+	if logger.lineage == nil {
+		logger.lineage = newLoggerLineage()
+	}
+	options := newLoggerOptions(logger.levelVar, logger.config != nil && logger.config.AddSource)
+	logger.renderConfig = newOutputRenderConfig(options)
+	if logger.text != nil {
+		logger.text = slog.New(newAddonsHandler(NewConsoleHandler(logger.w, logger.noColor, options), logger.ext, logger.lineage))
+	}
+	if logger.json != nil {
+		logger.json = slog.New(newAddonsHandler(NewJSONHandler(logger.w, options), logger.ext, logger.lineage))
+	}
+}
+
+// GetNamed 获取或创建命名logger实例
+// 支持实例隔离，每个名称对应独立的logger
+func (lm *LoggerManager) GetNamed(name string) *Logger {
+	if name == "" || name == "default" {
+		return lm.GetDefault()
+	}
+
+	lm.mu.RLock()
+	if logger, exists := lm.instances[name]; exists {
+		lm.mu.RUnlock()
+		return logger
+	}
+	lm.mu.RUnlock()
+
+	// 需要创建新实例
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	// 双重检查
+	if logger, exists := lm.instances[name]; exists {
+		return logger
+	}
+
+	// 创建新的logger实例
+	logger := lm.createLoggerWithConfig(name, lm.config)
+	lm.instances[name] = logger
+	return logger
+}
+
+// Configure 配置全局设置
+// 会同步运行时全局开关，并就地更新已存在实例，避免状态分叉。
+func (lm *LoggerManager) Configure(config *GlobalConfig) error {
+	if config == nil {
+		return NewInvalidInputError("config", "non-nil GlobalConfig", "nil")
+	}
+
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	lm.config = config
+	// 与运行时全局开关保持一致，避免 manager 与全局状态分叉。
+	setGlobalTextEnabled(config.EnableText)
+	setGlobalJSONEnabled(config.EnableJSON)
+	levelVar.Set(config.DefaultLevel)
+
+	// 就地更新已存在实例，确保外部持有的指针也能看到新配置。
+	if lm.defaultLogger != nil {
+		lm.applyConfigToLogger(lm.defaultLogger, config)
+	}
+	for _, logger := range lm.instances {
+		if logger == nil {
+			continue
+		}
+		lm.applyConfigToLogger(logger, config)
+	}
+	return nil
+}
+
+// Reset 重置管理器状态
+// 清除所有实例，在测试中很有用
+func (lm *LoggerManager) Reset() {
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	lm.defaultLogger = nil
+	lm.instances = make(map[string]*Logger)
+	lm.initialized.Store(false)
+}
+
+// ListInstances 列出所有已创建的logger实例名称
+func (lm *LoggerManager) ListInstances() []string {
+	lm.mu.RLock()
+	defer lm.mu.RUnlock()
+
+	names := make([]string, 0, len(lm.instances)+1)
+	if lm.defaultLogger != nil {
+		names = append(names, "default")
+	}
+	for name := range lm.instances {
+		names = append(names, name)
+	}
+	return names
+}
+
+// createLoggerWithConfig 使用全局配置创建logger实例
+// 这是创建logger的统一入口，确保配置一致性
+func (lm *LoggerManager) createLoggerWithConfig(name string, config *GlobalConfig) *Logger {
+	loggerLevel := newLoggerLevel(config.DefaultLevel, false)
+	options := newLoggerOptions(loggerLevel, config.DefaultSource)
+	options.AddSource = config.DefaultSource
+	lineage := newLoggerLineage()
+
+	// 如果需要DLP,则初始化
+	if dlpEnabled.Load() {
+		ext.enableDLP()
+	}
+
+	writer := config.DefaultWriter
+	if writer == nil {
+		writer = os.Stdout
+	}
+
+	logger := &Logger{
+		w:            writer,
+		noColor:      config.DefaultNoColor,
+		level:        config.DefaultLevel,
+		levelVar:     loggerLevel,
+		ext:          ext,
+		lineage:      lineage,
+		ctx:          context.Background(),
+		config:       DefaultConfig(), // 使用实例级别的默认配置
+		renderConfig: newOutputRenderConfig(options),
+	}
+
+	// 根据全局配置决定启用哪些handler
+	if config.EnableText {
+		logger.text = slog.New(newAddonsHandler(NewConsoleHandler(writer, config.DefaultNoColor, options), logger.ext, lineage))
+	}
+	if config.EnableJSON {
+		logger.json = slog.New(newAddonsHandler(NewJSONHandler(writer, options), logger.ext, lineage))
+	}
+
+	return logger
+}
+
+// applyConfigToLogger 将全局配置同步到已存在 Logger 实例。
+// 采用“就地替换字段”的方式，保证外部持有的指针仍然有效。
+func (lm *LoggerManager) applyConfigToLogger(target *Logger, config *GlobalConfig) {
+	if target == nil {
+		return
+	}
+	if target.lineage == nil {
+		target.lineage = newLoggerLineage()
+	}
+	updated := lm.createLoggerWithConfig("", config)
+	target.w = updated.w
+	if updated.text != nil {
+		target.text = slog.New(rebindAddonsHandler(updated.text.Handler(), target.ext, target.lineage))
+	} else {
+		target.text = nil
+	}
+	if updated.json != nil {
+		target.json = slog.New(rebindAddonsHandler(updated.json.Handler(), target.ext, target.lineage))
+	} else {
+		target.json = nil
+	}
+	target.noColor = updated.noColor
+	target.level = updated.level
+	target.ctx = updated.ctx
+	target.renderConfig = updated.renderConfig
+	if target.config == nil {
+		target.config = DefaultConfig()
+	}
+	target.config.NoColor = config.DefaultNoColor
+	target.config.AddSource = config.DefaultSource
+	target.config.SetEnableText(config.EnableText)
+	target.config.SetEnableJSON(config.EnableJSON)
+}
+
+// Shutdown 关闭管理器
+// 清理所有资源，程序退出时调用
+func (lm *LoggerManager) Shutdown() {
+	lm.mu.Lock()
+	defer lm.mu.Unlock()
+
+	// 这里可以添加清理逻辑，比如刷新缓冲区、关闭文件等
+	lm.defaultLogger = nil
+	lm.instances = make(map[string]*Logger)
+}
+
+// Stats 返回管理器统计信息
+type ManagerStats struct {
+	DefaultLoggerExists bool
+	InstanceCount       int
+	InstanceNames       []string
+}
+
+// GetStats 获取管理器统计信息
+func (lm *LoggerManager) GetStats() ManagerStats {
+	lm.mu.RLock()
+	defer lm.mu.RUnlock()
+
+	stats := ManagerStats{
+		DefaultLoggerExists: lm.defaultLogger != nil,
+		InstanceCount:       len(lm.instances),
+		InstanceNames:       make([]string, 0, len(lm.instances)),
+	}
+
+	for name := range lm.instances {
+		stats.InstanceNames = append(stats.InstanceNames, name)
+	}
+
+	return stats
+}
