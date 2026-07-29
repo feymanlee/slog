@@ -27,6 +27,7 @@ func TestLoggerBuilder_BuildsLogger(t *testing.T) {
 		EnableJSON(false).
 		EnableText(true).
 		Build()
+	logger.SetLevel(LevelInfo)
 
 	logger.Info("ok")
 	out := buf.String()
@@ -49,6 +50,7 @@ func TestLoggerBuilder_ContextHelper(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	logger := NewLoggerBuilder().WithWriter(buf).Build()
+	logger.SetLevel(LevelInfo)
 	ctx := context.WithValue(context.Background(), traceIDBuilderContextKey, "abc-123")
 	logger.InfoContext(ctx, "ctx message")
 
@@ -61,6 +63,7 @@ func TestLoggerBuilder_ContextHelper(t *testing.T) {
 func TestLoggerBuilder_LogfmtMode(t *testing.T) {
 	buf := &bytes.Buffer{}
 	logger := NewLoggerBuilder().WithWriter(buf).UseLogfmt().Build()
+	logger.SetLevel(LevelInfo)
 	logger.Info("lfmt", String("k", "v"))
 	out := buf.String()
 	if !strings.Contains(out, "k=v") || strings.Contains(out, "{") {
@@ -78,6 +81,7 @@ func TestLoggerBuilderCopiesConfigOutputFlags(t *testing.T) {
 	*config.EnableJSON = true
 	var buf bytes.Buffer
 	logger := builder.WithWriter(&buf).Build()
+	logger.SetLevel(LevelInfo)
 	logger.Info("copied config")
 
 	if out := buf.String(); !strings.Contains(out, "copied config") || strings.HasPrefix(strings.TrimSpace(out), "{") {
@@ -93,6 +97,7 @@ func TestLoggerBuilderGELFMode(t *testing.T) {
 		WithAttrs(String("request_id", "r1")).
 		UseGELF(options).
 		Build()
+	logger.SetLevel(LevelInfo)
 	logger.Info("gelf event")
 
 	var payload map[string]any
@@ -135,6 +140,7 @@ func TestLoggerBuilderNetOutputMode(t *testing.T) {
 		UseNetOutput(options).
 		WithAttrs(String("request_id", "r1")).
 		Build()
+	logger.SetLevel(LevelInfo)
 	logger.Info("network event")
 
 	select {

@@ -27,6 +27,8 @@ type LoggerBuilder struct {
 // NewLoggerBuilder 创建一个新的构建器，默认输出到 stdout、启用文本日志。
 func NewLoggerBuilder() *LoggerBuilder {
 	cfg := DefaultConfig()
+	cfg.SetEnableText(true)
+	cfg.SetEnableJSON(false)
 	return &LoggerBuilder{
 		cfg:    cfg,
 		writer: os.Stdout,
@@ -87,6 +89,8 @@ func (b *LoggerBuilder) EnableJSON(on bool) *LoggerBuilder {
 // UseLogfmt 切换为 logfmt 输出。
 func (b *LoggerBuilder) UseLogfmt() *LoggerBuilder {
 	b.mode = "logfmt"
+	b.cfg.SetEnableText(true)
+	b.cfg.SetEnableJSON(false)
 	return b
 }
 
@@ -94,6 +98,8 @@ func (b *LoggerBuilder) UseLogfmt() *LoggerBuilder {
 func (b *LoggerBuilder) UseGELF(opts *gelfmod.Options) *LoggerBuilder {
 	b.mode = "gelf"
 	b.gopts = opts
+	b.cfg.SetEnableText(false)
+	b.cfg.SetEnableJSON(true)
 	return b
 }
 
@@ -101,6 +107,8 @@ func (b *LoggerBuilder) UseGELF(opts *gelfmod.Options) *LoggerBuilder {
 func (b *LoggerBuilder) UseNetOutput(opts *outputnet.SenderOption) *LoggerBuilder {
 	b.mode = "output.net"
 	b.nopts = opts
+	b.cfg.SetEnableText(true)
+	b.cfg.SetEnableJSON(false)
 	return b
 }
 
