@@ -33,9 +33,10 @@ type writer struct {
 	localTime  bool
 	compress   bool
 
-	size int64
-	file *os.File
-	mu   sync.Mutex
+	size        int64
+	file        *os.File
+	mu          sync.Mutex
+	maintenance []chan struct{}
 }
 
 type logInfo struct {
@@ -152,8 +153,14 @@ func (w *writer) Write(p []byte) (n int, err error) {
 
 func (w *writer) Close() error {
 	w.mu.Lock()
-	defer w.mu.Unlock()
-	return w.close()
+	err := w.close()
+	pending := append([]chan struct{}(nil), w.maintenance...)
+	w.maintenance = nil
+	w.mu.Unlock()
+	for _, done := range pending {
+		<-done
+	}
+	return err
 }
 
 func (w *writer) close() error {
@@ -188,7 +195,10 @@ func (w *writer) rotate() error {
 	}
 
 	// 异步处理旧文件
+	done := make(chan struct{})
+	w.maintenance = append(w.maintenance, done)
 	go func() {
+		defer close(done)
 		if err := w.processOldFiles(); err != nil {
 			// 将错误输出到标准错误，避免循环日志问题
 			fmt.Fprintf(os.Stderr, "[slog-writer] failed to process old files: %v\n", err)
@@ -377,18 +387,24 @@ func (w *writer) tryCompressfile(src string) error {
 	if err != nil {
 		return err
 	}
+	gzfClosed := false
 	defer func() {
-		if closeErr := gzf.Close(); closeErr != nil {
-			// 目标文件关闭错误，记录警告
-			fmt.Fprintf(os.Stderr, "[slog-writer] warning: failed to close compressed file %s: %v\n", dst, closeErr)
+		if !gzfClosed {
+			if closeErr := gzf.Close(); closeErr != nil {
+				// 目标文件关闭错误，记录警告
+				fmt.Fprintf(os.Stderr, "[slog-writer] warning: failed to close compressed file %s: %v\n", dst, closeErr)
+			}
 		}
 	}()
 
 	gz := gzip.NewWriter(gzf)
+	gzClosed := false
 	defer func() {
-		if closeErr := gz.Close(); closeErr != nil {
-			// gzip writer关闭错误，记录警告
-			fmt.Fprintf(os.Stderr, "[slog-writer] warning: failed to close gzip writer for %s: %v\n", dst, closeErr)
+		if !gzClosed {
+			if closeErr := gz.Close(); closeErr != nil {
+				// gzip writer关闭错误，记录警告
+				fmt.Fprintf(os.Stderr, "[slog-writer] warning: failed to close gzip writer for %s: %v\n", dst, closeErr)
+			}
 		}
 	}()
 
@@ -400,10 +416,12 @@ func (w *writer) tryCompressfile(src string) error {
 	if err := gz.Close(); err != nil {
 		return removeFailedCompressedFile(dst, err)
 	}
+	gzClosed = true
 
 	if err := gzf.Close(); err != nil {
 		return removeFailedCompressedFile(dst, err)
 	}
+	gzfClosed = true
 
 	return os.Remove(src)
 }

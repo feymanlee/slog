@@ -18,6 +18,7 @@ import (
 type mockWriter struct {
 	mu   sync.Mutex
 	data [][]byte
+	done chan struct{}
 }
 
 func (w *mockWriter) Write(p []byte) (n int, err error) {
@@ -27,6 +28,12 @@ func (w *mockWriter) Write(p []byte) (n int, err error) {
 	cp := make([]byte, len(p))
 	copy(cp, p)
 	w.data = append(w.data, cp)
+	if w.done != nil {
+		select {
+		case w.done <- struct{}{}:
+		default:
+		}
+	}
 	return len(p), nil
 }
 
@@ -34,6 +41,19 @@ func (w *mockWriter) getData() [][]byte {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	return w.data
+}
+
+func newSignalingWriter() *mockWriter {
+	return &mockWriter{done: make(chan struct{}, 1)}
+}
+
+func (w *mockWriter) waitForWrite(t *testing.T) {
+	t.Helper()
+	select {
+	case <-w.done:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for syslog write")
+	}
 }
 
 func TestSyslogHandler_Enabled(t *testing.T) {
@@ -63,7 +83,7 @@ func TestSyslogHandler_Enabled(t *testing.T) {
 }
 
 func TestSyslogHandler_Handle(t *testing.T) {
-	w := &mockWriter{}
+	w := newSignalingWriter()
 	h := NewSyslogHandler(w, &Option{
 		Level: slog.LevelInfo,
 	})
@@ -80,8 +100,7 @@ func TestSyslogHandler_Handle(t *testing.T) {
 		t.Errorf("Handle() error = %v", err)
 	}
 
-	// 等待异步写入完成
-	time.Sleep(100 * time.Millisecond)
+	w.waitForWrite(t)
 
 	data := w.getData()
 	if len(data) != 1 {
@@ -119,7 +138,7 @@ func TestSyslogHandler_NilWriterReturnsError(t *testing.T) {
 }
 
 func TestSyslogHandler_WithAttrs(t *testing.T) {
-	w := &mockWriter{}
+	w := newSignalingWriter()
 	h := NewSyslogHandler(w, &Option{
 		Level: slog.LevelInfo,
 	})
@@ -196,7 +215,7 @@ func TestNewSyslogHandler_Defaults(t *testing.T) {
 }
 
 func TestSyslogHandler_CEEPrefix(t *testing.T) {
-	w := &mockWriter{}
+	w := newSignalingWriter()
 	h := NewSyslogHandler(w, &Option{
 		Level: slog.LevelInfo,
 	})
@@ -208,8 +227,7 @@ func TestSyslogHandler_CEEPrefix(t *testing.T) {
 	}
 
 	_ = h.Handle(context.Background(), record)
-
-	time.Sleep(100 * time.Millisecond)
+	w.waitForWrite(t)
 
 	data := w.getData()
 	if len(data) == 0 {
@@ -233,7 +251,7 @@ func (c customSyslogCodec) Encode(_ context.Context, record *slog.Record, attrs 
 }
 
 func TestSyslogHandler_CustomCodec(t *testing.T) {
-	w := &mockWriter{}
+	w := newSignalingWriter()
 	h := NewSyslogHandler(w, &Option{
 		Level: slog.LevelInfo,
 		Codec: customSyslogCodec{},
@@ -245,7 +263,7 @@ func TestSyslogHandler_CustomCodec(t *testing.T) {
 		Message: "custom payload",
 	}
 	_ = h.Handle(context.Background(), record)
-	time.Sleep(100 * time.Millisecond)
+	w.waitForWrite(t)
 
 	data := w.getData()
 	if len(data) == 0 {
@@ -285,8 +303,8 @@ func TestSyslogHandler_ChainedOperations(t *testing.T) {
 }
 
 func TestSyslogHandler_NonBlocking(t *testing.T) {
-	// 创建一个慢速 writer
-	slowWriter := &slowMockWriter{delay: 200 * time.Millisecond}
+	slowWriter := newBlockingWriter()
+	defer close(slowWriter.release)
 
 	h := NewSyslogHandler(slowWriter, &Option{
 		Level: slog.LevelInfo,
@@ -310,6 +328,11 @@ func TestSyslogHandler_NonBlocking(t *testing.T) {
 	// 验证 Handle 是非阻塞的
 	if elapsed > 50*time.Millisecond {
 		t.Errorf("Handle() took too long: %v", elapsed)
+	}
+	select {
+	case <-slowWriter.started:
+	case <-time.After(time.Second):
+		t.Fatal("async writer did not start")
 	}
 }
 
@@ -377,11 +400,17 @@ func TestSyslogHandler_ReportsAsyncErrors(t *testing.T) {
 }
 
 type slowMockWriter struct {
-	delay time.Duration
+	started chan struct{}
+	release chan struct{}
+}
+
+func newBlockingWriter() *slowMockWriter {
+	return &slowMockWriter{started: make(chan struct{}, 1), release: make(chan struct{})}
 }
 
 func (w *slowMockWriter) Write(p []byte) (n int, err error) {
-	time.Sleep(w.delay)
+	w.started <- struct{}{}
+	<-w.release
 	return len(p), nil
 }
 

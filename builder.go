@@ -46,8 +46,7 @@ func (b *LoggerBuilder) WithConfig(cfg *Config) *LoggerBuilder {
 	if cfg == nil {
 		return b
 	}
-	copyCfg := *cfg
-	b.cfg = &copyCfg
+	b.cfg = cloneLoggerConfig(cfg)
 	return b
 }
 
@@ -118,8 +117,10 @@ func (b *LoggerBuilder) Build() *Logger {
 	switch b.mode {
 	case "logfmt":
 		logger = NewLogfmtLogger(b.writer, nil)
+		logger.config = b.outputConfig(true, false)
 	case "gelf":
 		logger = NewGELFLogger(b.writer, nil, b.gopts)
+		logger.config = b.outputConfig(false, true)
 	case "output.net":
 		opt := &outputnet.SenderOption{}
 		if b.nopts != nil {
@@ -144,7 +145,7 @@ func (b *LoggerBuilder) Build() *Logger {
 			ext:          loggerExt,
 			lineage:      lineage,
 			ctx:          context.Background(),
-			config:       b.cfg,
+			config:       b.outputConfig(true, false),
 			renderConfig: outputRenderConfig{},
 		}
 		logger.text = slog.New(newAddonsHandler(handler, loggerExt, lineage))
@@ -170,4 +171,29 @@ func (b *LoggerBuilder) Build() *Logger {
 		logger = logger.With(b.attrs...)
 	}
 	return logger
+}
+
+func (b *LoggerBuilder) outputConfig(defaultText, defaultJSON bool) *Config {
+	config := cloneLoggerConfig(b.cfg)
+	if config.EnableText == nil {
+		config.SetEnableText(defaultText)
+	}
+	if config.EnableJSON == nil {
+		config.SetEnableJSON(defaultJSON)
+	}
+	return config
+}
+
+func cloneLoggerConfig(config *Config) *Config {
+	if config == nil {
+		return DefaultConfig()
+	}
+	cloned := *config
+	if config.EnableText != nil {
+		cloned.EnableText = boolPtr(*config.EnableText)
+	}
+	if config.EnableJSON != nil {
+		cloned.EnableJSON = boolPtr(*config.EnableJSON)
+	}
+	return &cloned
 }

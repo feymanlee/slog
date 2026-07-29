@@ -11,12 +11,20 @@ type rateLimiter struct {
 	tokens     float64
 	refill     float64
 	lastRefill time.Time
+	now        func() time.Time
 	enabled    bool
 }
 
 func newRateLimiter(ratePerSecond, burst int) *rateLimiter {
+	return newRateLimiterWithClock(ratePerSecond, burst, time.Now)
+}
+
+func newRateLimiterWithClock(ratePerSecond, burst int, now func() time.Time) *rateLimiter {
+	if now == nil {
+		now = time.Now
+	}
 	if ratePerSecond <= 0 {
-		return &rateLimiter{enabled: false}
+		return &rateLimiter{enabled: false, now: now}
 	}
 	if burst <= 0 {
 		burst = ratePerSecond
@@ -25,7 +33,8 @@ func newRateLimiter(ratePerSecond, burst int) *rateLimiter {
 		capacity:   burst,
 		tokens:     float64(burst),
 		refill:     float64(ratePerSecond),
-		lastRefill: time.Now(),
+		lastRefill: now(),
+		now:        now,
 		enabled:    true,
 	}
 }
@@ -36,7 +45,7 @@ func (rl *rateLimiter) Allow() bool {
 	}
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	now := time.Now()
+	now := rl.now()
 	elapsed := now.Sub(rl.lastRefill).Seconds()
 	if elapsed > 0 {
 		rl.tokens += elapsed * rl.refill
@@ -65,5 +74,5 @@ func (rl *rateLimiter) configure(ratePerSecond, burst int, enabled bool) {
 	rl.capacity = burst
 	rl.tokens = float64(burst)
 	rl.refill = float64(ratePerSecond)
-	rl.lastRefill = time.Now()
+	rl.lastRefill = rl.now()
 }

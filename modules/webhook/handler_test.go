@@ -46,6 +46,7 @@ func TestWebhookHandler_Handle(t *testing.T) {
 		mu       sync.Mutex
 		received []map[string]any
 	)
+	requestDone := make(chan struct{}, 1)
 
 	// 创建测试服务器
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -65,6 +66,7 @@ func TestWebhookHandler_Handle(t *testing.T) {
 		mu.Lock()
 		received = append(received, payload)
 		mu.Unlock()
+		requestDone <- struct{}{}
 
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -88,8 +90,11 @@ func TestWebhookHandler_Handle(t *testing.T) {
 		t.Errorf("Handle() error = %v", err)
 	}
 
-	// 等待异步发送完成
-	time.Sleep(100 * time.Millisecond)
+	select {
+	case <-requestDone:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for webhook request")
+	}
 
 	mu.Lock()
 	defer mu.Unlock()
@@ -163,12 +168,13 @@ func TestWebhookHandler_WithGroup(t *testing.T) {
 }
 
 func TestWebhookHandler_Timeout(t *testing.T) {
-	// 创建一个慢速服务器
+	release := make(chan struct{})
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(200 * time.Millisecond)
+		<-release
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()
+	defer close(release)
 
 	h := Option{
 		Level:    slog.LevelInfo,

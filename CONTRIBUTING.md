@@ -94,19 +94,17 @@ func NewLogger(w io.Writer, noColor, addSource bool) *Logger {
 ### 运行测试
 
 ```bash
-# 运行所有测试
-go test ./...
+# 随机化顺序运行所有测试
+make test
 
-# 运行带覆盖率
-go test -cover ./...
+# 运行竞态检测
+make test-race
 
-# 生成覆盖率报告
-go test -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out -o coverage.html
-
-# 查看覆盖率详情
-go tool cover -func=coverage.out
+# 生成覆盖率报告并执行门禁
+make test-coverage
 ```
+
+CI 在 Go 1.23 和当前 stable Go 上运行构建、`go vet` 和随机化顺序测试，并在 stable Go 上运行竞态检测与覆盖率门禁。
 
 ### 竞态检测
 
@@ -131,10 +129,11 @@ go test -bench=. -benchmem -benchtime=3s ./...
 
 ### 测试要求
 
-- 新增功能必须包含单元测试
-- 测试覆盖率应保持在 **80%** 以上
-- 边界条件和错误路径必须测试
-- 并发代码需进行竞态检测
+- 优先测试对用户可见的契约、高风险分支、边界条件和错误路径，不为每个简单 wrapper 重复写测试。
+- 测试必须能够在 `-shuffle=on` 下独立运行；修改全局状态时必须使用 `t.Cleanup` 恢复。
+- 并发和异步代码必须通过 `go test -race ./...`，测试同步优先使用 channel、WaitGroup 或可控时钟，避免固定 `time.Sleep`。
+- 库包的语句覆盖率硬性下限为 **65%**；`example` 演示可执行包参与构建和普通测试，不计入该覆盖率口径。
+- 覆盖率门禁只能随测试增强而提高，不应通过降低阈值使 CI 通过。
 
 ### Example 测试
 

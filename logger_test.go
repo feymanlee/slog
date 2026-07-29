@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"log/slog"
 	"strings"
 	"sync"
@@ -207,7 +208,6 @@ func TestSubscribeWithOptions_DropOldestStats(t *testing.T) {
 	logger.Info("msg-1")
 	logger.Info("msg-2")
 	logger.Info("msg-3")
-	time.Sleep(20 * time.Millisecond)
 
 	stats := GetSubscriptionStats()
 	if stats.Dropped == 0 {
@@ -236,7 +236,6 @@ func TestSubscribeWithOptions_DropNewestStats(t *testing.T) {
 	logger.Info("msg-1")
 	logger.Info("msg-2")
 	logger.Info("msg-3")
-	time.Sleep(20 * time.Millisecond)
 
 	stats := GetSubscriptionStats()
 	if stats.DroppedNewest == 0 {
@@ -256,7 +255,6 @@ func TestSubscribeWithOptions_BlockWithTimeoutStats(t *testing.T) {
 	logger.Info("msg-1")
 	logger.Info("msg-2")
 	logger.Info("msg-3")
-	time.Sleep(30 * time.Millisecond)
 
 	stats := GetSubscriptionStats()
 	if stats.DroppedTimed == 0 {
@@ -660,10 +658,16 @@ func TestBenchmarkLikeWrappedSourcePointsToCaller(t *testing.T) {
 func testWithSlogSourceLoggerGlobalOnly(t *testing.T, emit func()) {
 	t.Helper()
 	var buf bytes.Buffer
-	ResetGlobalLogger(&buf, false, true)
 	SetLevelInfo()
 	EnableTextLogger()
 	DisableJSONLogger()
+	ResetGlobalLogger(&buf, false, true)
+	t.Cleanup(func() {
+		SetLevelInfo()
+		EnableTextLogger()
+		DisableJSONLogger()
+		ResetGlobalLogger(io.Discard, true, false)
+	})
 
 	buf.Reset()
 	emit()

@@ -3,6 +3,7 @@ package modules
 import (
 	"fmt"
 	"log/slog"
+	"reflect"
 	"sort"
 	"sync"
 )
@@ -79,6 +80,10 @@ func NewRegistry() *Registry {
 
 // RegisterFactory 注册模块工厂
 func (r *Registry) RegisterFactory(name string, factory ModuleFactory) error {
+	if factory == nil {
+		return fmt.Errorf("factory %s cannot be nil", name)
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -92,6 +97,10 @@ func (r *Registry) RegisterFactory(name string, factory ModuleFactory) error {
 
 // Register 注册模块实例
 func (r *Registry) Register(module Module) error {
+	if isNilModule(module) {
+		return fmt.Errorf("module cannot be nil")
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -112,6 +121,19 @@ func (r *Registry) Register(module Module) error {
 	})
 
 	return nil
+}
+
+func isNilModule(module Module) bool {
+	if module == nil {
+		return true
+	}
+	value := reflect.ValueOf(module)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return value.IsNil()
+	default:
+		return false
+	}
 }
 
 // Create 通过工厂创建模块

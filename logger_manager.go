@@ -250,13 +250,9 @@ func (lm *LoggerManager) createLoggerWithConfig(name string, config *GlobalConfi
 		renderConfig: newOutputRenderConfig(options),
 	}
 
-	// 根据全局配置决定启用哪些handler
-	if config.EnableText {
-		logger.text = slog.New(newAddonsHandler(NewConsoleHandler(writer, config.DefaultNoColor, options), logger.ext, lineage))
-	}
-	if config.EnableJSON {
-		logger.json = slog.New(newAddonsHandler(NewJSONHandler(writer, options), logger.ext, lineage))
-	}
+	// 保留两个 handler，运行时开关只决定是否输出，以便禁用后可以动态重新启用。
+	logger.text = slog.New(newAddonsHandler(NewConsoleHandler(writer, config.DefaultNoColor, options), logger.ext, lineage))
+	logger.json = slog.New(newAddonsHandler(NewJSONHandler(writer, options), logger.ext, lineage))
 
 	return logger
 }

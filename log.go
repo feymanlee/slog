@@ -402,6 +402,8 @@ func NewLogfmtLogger(w io.Writer, opts *HandlerOptions) *Logger {
 		config:       DefaultConfig(),
 		renderConfig: newOutputRenderConfig(opts),
 	}
+	logger.config.SetEnableText(true)
+	logger.config.SetEnableJSON(false)
 	handler := logfmtmod.New(logfmtmod.Option{
 		Writer:      w,
 		Level:       opts.Level,
@@ -436,6 +438,8 @@ func NewGELFLogger(w io.Writer, opts *HandlerOptions, gopts *gelfmod.Options) *L
 		config:       DefaultConfig(),
 		renderConfig: newOutputRenderConfig(opts),
 	}
+	logger.config.SetEnableText(false)
+	logger.config.SetEnableJSON(true)
 	opt := gelfmod.Options{
 		Writer:      nil,
 		Level:       opts.Level,

@@ -133,9 +133,6 @@ func TestSubscriberErrorHandling(t *testing.T) {
 	logger.Info("消息1")
 	logger.Info("消息2") // 这条消息应该触发错误处理
 
-	// 给一些时间处理
-	time.Sleep(100 * time.Millisecond)
-
 	// 验证至少收到一条消息
 	select {
 	case event := <-records:

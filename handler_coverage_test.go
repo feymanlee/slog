@@ -72,28 +72,52 @@ func TestConsoleHandler_DefaultInfoAndCustomLevel(t *testing.T) {
 	}
 }
 
-// TestGlobalFunctionsCoverage 全局函数覆盖率测试
-func TestGlobalFunctionsCoverage(t *testing.T) {
-	// 测试级别设置函数
-	SetLevelTrace()
-	SetLevelDebug()
-	SetLevelInfo()
-	SetLevelWarn()
-	SetLevelError()
-	SetLevelFatal()
+func TestGlobalRuntimeSettersUpdateState(t *testing.T) {
+	originalLevel := GetLevel()
+	originalText := isGlobalTextEnabled()
+	originalJSON := isGlobalJSONEnabled()
+	originalDLP := IsDLPEnabled()
+	t.Cleanup(func() {
+		_ = SetLevel(originalLevel)
+		setGlobalTextEnabled(originalText)
+		setGlobalJSONEnabled(originalJSON)
+		if originalDLP {
+			EnableDLPLogger()
+		} else {
+			DisableDLPLogger()
+		}
+	})
 
-	// 测试启用/禁用函数
+	levels := []struct {
+		set  func()
+		want Level
+	}{
+		{SetLevelTrace, LevelTrace},
+		{SetLevelDebug, LevelDebug},
+		{SetLevelInfo, LevelInfo},
+		{SetLevelWarn, LevelWarn},
+		{SetLevelError, LevelError},
+		{SetLevelFatal, LevelFatal},
+	}
+	for _, test := range levels {
+		test.set()
+		if got := GetLevel(); got != test.want {
+			t.Fatalf("GetLevel() = %v, want %v", got, test.want)
+		}
+	}
+
 	EnableTextLogger()
-	DisableTextLogger()
 	EnableJSONLogger()
-	DisableJSONLogger()
 	EnableDLPLogger()
-	DisableDLPLogger()
-
-	// 恢复默认设置
-	EnableTextLogger()
+	if !isGlobalTextEnabled() || !isGlobalJSONEnabled() || !IsDLPEnabled() {
+		t.Fatal("enable functions did not update runtime state")
+	}
+	DisableTextLogger()
 	DisableJSONLogger()
-	SetLevelInfo()
+	DisableDLPLogger()
+	if isGlobalTextEnabled() || isGlobalJSONEnabled() || IsDLPEnabled() {
+		t.Fatal("disable functions did not update runtime state")
+	}
 }
 
 // TestLoggerWithFieldsCoverage 带字段日志覆盖率测试

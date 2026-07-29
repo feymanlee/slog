@@ -190,12 +190,14 @@ func TestLRUCache_ThreadSafety(t *testing.T) {
 	const numOperations = 100
 
 	var wg sync.WaitGroup
+	start := make(chan struct{})
 
 	// 并发写入
 	for i := range numGoroutines {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
+			<-start
 			for j := range numOperations {
 				key := id*numOperations + j
 				cache.Put(key, key*2)
@@ -208,6 +210,7 @@ func TestLRUCache_ThreadSafety(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
+			<-start
 			for j := range numOperations {
 				key := id*numOperations + j
 				cache.Get(key)
@@ -219,17 +222,18 @@ func TestLRUCache_ThreadSafety(t *testing.T) {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		time.Sleep(time.Millisecond * 10)
+		<-start
 		cache.Clear()
 	}()
 
 	go func() {
 		defer wg.Done()
+		<-start
 		for range 50 {
 			cache.GetStats()
-			time.Sleep(time.Microsecond * 100)
 		}
 	}()
+	close(start)
 
 	// 等待所有goroutine完成
 	done := make(chan struct{})
@@ -337,11 +341,13 @@ func TestTieredPools_ConcurrencyCoverage(t *testing.T) {
 	const numOperations = 50
 
 	var wg sync.WaitGroup
+	start := make(chan struct{})
 
 	for i := range numGoroutines {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
+			<-start
 
 			for j := range numOperations {
 				// 随机大小的buffer
@@ -361,11 +367,12 @@ func TestTieredPools_ConcurrencyCoverage(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		<-start
 		for range 100 {
 			pools.GetStats()
-			time.Sleep(time.Microsecond * 100)
 		}
 	}()
+	close(start)
 
 	// 等待完成
 	done := make(chan struct{})

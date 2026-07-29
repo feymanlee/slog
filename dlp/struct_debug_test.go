@@ -31,7 +31,7 @@ func TestStructDebugDetailed(t *testing.T) {
 			Name string `dlp:"chinese_name"`
 		}
 
-		obj := &TestStruct{Name: "手动测试"}
+		obj := &TestStruct{Name: "张小明"}
 		val := reflect.ValueOf(obj).Elem()
 		field := val.Field(0)
 		fieldType := val.Type().Field(0)
@@ -57,6 +57,9 @@ func TestStructDebugDetailed(t *testing.T) {
 			t.Logf("Original: %s, Desensitized: %s", original, desensitized)
 			field.SetString(desensitized)
 			t.Logf("Field after setting: %s", field.String())
+			if desensitized == original || field.String() != desensitized {
+				t.Fatalf("field was not desensitized: original=%q result=%q", original, field.String())
+			}
 		}
 
 		t.Logf("Final object: %+v", obj)
@@ -68,7 +71,7 @@ func TestStructDebugDetailed(t *testing.T) {
 			Name string `dlp:"chinese_name"`
 		}
 
-		obj := &TestStruct{Name: "步骤测试"}
+		obj := &TestStruct{Name: "李四"}
 		t.Logf("Original: %+v", obj)
 
 		structProcessor := NewStructDesensitizer(engine)
@@ -80,6 +83,9 @@ func TestStructDebugDetailed(t *testing.T) {
 		err := structProcessor.desensitizeValue(val, 0)
 		if err != nil {
 			t.Fatalf("DesensitizeValue error: %v", err)
+		}
+		if obj.Name == "李四" {
+			t.Fatalf("desensitizeValue left tagged field unchanged: %+v", obj)
 		}
 
 		t.Logf("After desensitizeValue: %+v", obj)

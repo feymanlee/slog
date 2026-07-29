@@ -41,7 +41,7 @@ vet:
 ## test: Run all tests
 # =============================================================================
 test:
-	$(GOTEST) -count=1 ./...
+	$(GOTEST) -shuffle=on -count=1 ./...
 
 # =============================================================================
 ## test-race: Run all tests with race detector
@@ -71,8 +71,9 @@ test-bench:
 ## test-coverage: Run tests and generate coverage report
 # =============================================================================
 test-coverage:
-	$(GOTEST) -race -covermode atomic -coverprofile=coverage.out ./...
+	$(GOCMD) list ./... | awk '$$0 !~ /\/example$$/' | xargs $(GOTEST) -race -covermode atomic -coverprofile=coverage.out
 	$(GOCMD) tool cover -func=coverage.out
+	./scripts/check-coverage.sh coverage.out 65.0
 	@echo
 	@echo "HTML coverage report: coverage.html"
 	$(GOCMD) tool cover -html=coverage.out -o coverage.html

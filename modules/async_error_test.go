@@ -132,30 +132,27 @@ func TestRunAsync_DropsWhenQueueFull(t *testing.T) {
 		QueueSize:   1,
 	})
 
-	// Fill workers and queue with blocking tasks so subsequent submissions must drop.
+	// Occupy the worker, then fill the queue so the next submission must drop.
 	block := make(chan struct{})
 	defer close(block)
-	blockingTask := func() error {
+	started := make(chan struct{})
+	RunAsync("overflow-worker", func() error {
+		close(started)
 		<-block
 		return nil
+	})
+	select {
+	case <-started:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("worker did not start")
 	}
-	opts := GetAsyncExecutorOptions()
-	for i := 0; i < opts.WorkerCount+opts.QueueSize+32; i++ {
-		RunAsync("overflow-fill", blockingTask)
-	}
-
-	deadline := time.Now().Add(500 * time.Millisecond)
-	for asyncDropCount.Load() == 0 && time.Now().Before(deadline) {
-		time.Sleep(10 * time.Millisecond)
-	}
+	RunAsync("overflow-queue", func() error { return nil })
 
 	var calls atomic.Int32
 	RunAsync("overflow", func() error {
 		calls.Add(1)
 		return nil
 	})
-
-	time.Sleep(20 * time.Millisecond)
 
 	if got := calls.Load(); got != 0 {
 		t.Fatalf("task should not execute when queue is full, got calls=%d", got)
