@@ -9,8 +9,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/darkit/slog/internal/common"
-	"github.com/darkit/slog/internal/dlp/cachekey"
+	"github.com/feymanlee/slog/internal/common"
+	"github.com/feymanlee/slog/internal/dlp/cachekey"
 )
 
 var (

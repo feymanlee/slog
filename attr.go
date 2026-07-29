@@ -118,7 +118,7 @@ func SetLogLoggerLevel(level Level) (oldLevel Level) {
 
 // SetDefault 设置默认 Logger，并同步标准 log/slog 与本包顶层日志入口。
 //
-// logger 支持 *SlogLogger 与本包增强 *Logger，便于兼容标准库示例和 darkit/slog 的增强入口。
+// logger 支持 *SlogLogger 与本包增强 *Logger，便于兼容标准库示例和 feymanlee/slog 的增强入口。
 func SetDefault(logger any) {
 	switch l := logger.(type) {
 	case *SlogLogger:

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 var (

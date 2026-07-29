@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.1.0] - 2026-07-23
+## [v0.2.0] - 2026-07-29
 
 ### Added
 
@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The canonical Go module path is now `github.com/feymanlee/slog`.
 - Formatter module updates now replace configuration atomically and preserve
   the previous formatter set when configuration fails.
 - Module integrations use typed provider interfaces; handler and sink module
@@ -47,7 +48,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 | slog Version | Minimum Go Version |
 | ------------ | ------------------ |
-| v0.1.x       | Go 1.23            |
+| v0.2.x       | Go 1.23            |
 
-[unreleased]: https://github.com/feymanlee/slog/compare/v0.1.0...HEAD
-[v0.1.0]: https://github.com/feymanlee/slog/releases/tag/v0.1.0
+[unreleased]: https://github.com/feymanlee/slog/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/feymanlee/slog/releases/tag/v0.2.0

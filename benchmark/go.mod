@@ -3,7 +3,7 @@ module benchmark
 go 1.25.0
 
 require (
-	github.com/darkit/slog v0.1.2
+	github.com/feymanlee/slog v0.0.0
 	github.com/sirupsen/logrus v1.9.3
 	go.uber.org/zap v1.27.1
 )
@@ -16,4 +16,4 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 )
 
-replace github.com/darkit/slog => ../
+replace github.com/feymanlee/slog => ../

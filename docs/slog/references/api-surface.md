@@ -1,13 +1,13 @@
 # API surface and standard slog compatibility
 
-Use this reference when the user wants callers to import only `github.com/darkit/slog`, or when translating standard `log/slog` examples.
+Use this reference when the user wants callers to import only `github.com/feymanlee/slog`, or when translating standard `log/slog` examples.
 
 ## Import rule
 
 User-facing code should normally import only:
 
 ```go
-import "github.com/darkit/slog"
+import "github.com/feymanlee/slog"
 ```
 
 The root package maps common standard `log/slog` names.
@@ -16,7 +16,7 @@ The root package maps common standard `log/slog` names.
 
 Use these root names instead of `log/slog` imports:
 
-| Standard concept | darkit/slog root name |
+| Standard concept | feymanlee/slog root name |
 | --- | --- |
 | `slog.Level` | `slog.Level` |
 | `slog.Attr` | `slog.Attr` |

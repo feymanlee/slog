@@ -1,6 +1,6 @@
 # Slog 日志库示例
 
-本目录包含了 `github.com/darkit/slog` 日志库的综合功能演示，展示了所有核心特性和最佳实践。
+本目录包含了 `github.com/feymanlee/slog` 日志库的综合功能演示，展示了所有核心特性和最佳实践。
 
 ## 快速开始
 

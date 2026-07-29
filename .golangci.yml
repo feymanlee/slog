@@ -24,12 +24,12 @@ formatters:
       simplify: true
     goimports:
       local-prefixes:
-        - github.com/darkit/slog
+        - github.com/feymanlee/slog
     gci:
       sections:
         - standard
         - default
-        - prefix(github.com/darkit/slog)
+        - prefix(github.com/feymanlee/slog)
 
 linters:
   default: all

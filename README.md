@@ -1,16 +1,16 @@
 # slog
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/darkit/slog.svg)](https://pkg.go.dev/github.com/darkit/slog)
-[![Go Report Card](https://goreportcard.com/badge/github.com/darkit/slog)](https://goreportcard.com/report/github.com/darkit/slog)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/darkit/slog/blob/main/LICENSE)
+[![Go Reference](https://pkg.go.dev/badge/github.com/feymanlee/slog.svg)](https://pkg.go.dev/github.com/feymanlee/slog)
+[![Go Report Card](https://goreportcard.com/badge/github.com/feymanlee/slog)](https://goreportcard.com/report/github.com/feymanlee/slog)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/feymanlee/slog/blob/main/LICENSE)
 [![Go Version](https://img.shields.io/badge/go-%3E%3D1.23-00ADD8.svg)](https://go.dev/doc/devel/release)
 
-基于 Go 1.23+ 官方 `log/slog` 扩展的高性能结构化日志库。内置 DLP 数据脱敏、分级对象池、日志订阅、模块化扩展，专为生产环境设计。
+基于 Go 1.23+ 官方 `log/slog` 的生产级结构化日志库，支持 DLP 数据脱敏、Logger Lineage 模块隔离、动态配置、日志订阅与多种输出格式。
 
 ## 安装
 
 ```bash
-go get github.com/darkit/slog@latest
+go get github.com/feymanlee/slog@latest
 ```
 
 > 要求 Go 1.23+
@@ -23,7 +23,7 @@ package main
 import (
     "context"
 
-    "github.com/darkit/slog"
+    "github.com/feymanlee/slog"
 )
 
 func main() {
@@ -108,6 +108,8 @@ logger := slog.NewLoggerBuilder().
 ### 多格式 Builder
 
 ```go
+import outputnet "github.com/feymanlee/slog/modules/output/net"
+
 // Logfmt（接入 Loki / Vector）
 logger := slog.NewLoggerBuilder().UseLogfmt().Build()
 
@@ -171,7 +173,7 @@ type UserInfo struct {
 ### Engine 级直接调用
 
 ```go
-import "github.com/darkit/slog/dlp"
+import "github.com/feymanlee/slog/dlp"
 
 engine := dlp.NewDlpEngine()
 engine.Enable()
@@ -351,19 +353,23 @@ cfg := &slog.Config{
 logger := slog.NewLoggerWithConfig(os.Stdout, cfg)
 ```
 
-**性能指标**：DLP 缓存命中 ~46ns/op（无缓存 ~2790ns/op），缓存键生成 ~314ns/op（xxhash64），内存复用率 95%+。
+实际性能取决于 Go 版本、硬件、输出目标和配置。可在当前环境运行基准测试：
+
+```bash
+go test -run '^$' -bench . -benchmem ./...
+```
 
 ## 模块系统
 
 | 模块 | 说明 |
 |------|------|
 | `formatter` | 时间格式化、错误格式化、HTTP 请求格式化 |
-| `multi` | Fanout / Failover / Router 多输出模式 |
-| `webhook` | HTTP 日志推送（支持 Slack / Discord / 自定义 Webhook） |
-| `syslog` | RFC5424 Syslog 协议输出 |
-| `gelf` | Graylog 扩展日志格式 |
-| `logfmt` | 键值对格式（Loki / Vector 友好） |
-| `output/net` | TCP/UDP 网络日志输出 |
+| `multi` | Fanout 多路分发 |
+| `webhook` | HTTP POST JSON 输出，支持自定义 Codec 和 Transport |
+| `syslog` | TCP/UDP 输出，使用 `@cee:` 前缀并支持自定义 Codec |
+| `output/gelf` | GELF 1.1 输出 |
+| `output/logfmt` | Logfmt 输出（Loki / Vector 友好） |
+| `output/net` | 通用 TCP/UDP 输出，支持自定义 Codec |
 
 ```go
 logger := slog.NewLoggerBuilder().
@@ -384,9 +390,9 @@ import (
     "fmt"
     "os"
 
-    "github.com/darkit/slog"
-    "github.com/darkit/slog/modules"
-    _ "github.com/darkit/slog/modules/formatter" // 注册 formatter 工厂
+    "github.com/feymanlee/slog"
+    "github.com/feymanlee/slog/modules"
+    _ "github.com/feymanlee/slog/modules/formatter" // 注册 formatter 工厂
 )
 
 func main() {
@@ -442,7 +448,9 @@ make help           # 查看所有目标
 
 ## 文档
 
-- [API 参考](https://pkg.go.dev/github.com/darkit/slog)
+- [GitHub 仓库](https://github.com/feymanlee/slog)
+- [v0.2.0 Release](https://github.com/feymanlee/slog/releases/tag/v0.2.0)
+- [API 参考](https://pkg.go.dev/github.com/feymanlee/slog)
 - [模块系统说明](./modules/README.md)
 - [领域术语](./CONTEXT.md)
 - [贡献指南](./CONTRIBUTING.md)
@@ -451,6 +459,9 @@ make help           # 查看所有目标
 ## 许可证
 
 [MIT](./LICENSE)
+
 ## 致谢
+
+本项目参考了 [DarkiT/slog](https://github.com/DarkiT/slog)，感谢原项目提供的设计与实现基础。
 
 基于 Go 官方 [`log/slog`](https://pkg.go.dev/log/slog) 包扩展开发。

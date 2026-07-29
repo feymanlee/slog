@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"sync/atomic"
 
-	"github.com/darkit/slog/modules"
-	"github.com/darkit/slog/modules/multi"
+	"github.com/feymanlee/slog/modules"
+	"github.com/feymanlee/slog/modules/multi"
 )
 
 // RecordRouter 定义模块路由策略，返回要接收当前记录的模块名列表。

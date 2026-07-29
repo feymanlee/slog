@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 // FormatterAdapter 格式化器模块适配器

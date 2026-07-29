@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/darkit/slog/internal/xxhash"
+	"github.com/feymanlee/slog/internal/xxhash"
 )
 
 // CacheKey 缓存键优化器

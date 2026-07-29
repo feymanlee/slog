@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	darkit "github.com/darkit/slog"
+	feymanlee "github.com/feymanlee/slog"
 )
 
 // PerformanceDemo 性能演示
@@ -44,10 +44,10 @@ func testSimpleLogging() {
 	iterations := 100000
 	message := "Simple log message for performance test"
 
-	// darkit/slog
-	fmt.Print("darkit/slog: ")
+	// feymanlee/slog
+	fmt.Print("feymanlee/slog: ")
 	start := time.Now()
-	darkitLogger := darkit.NewLogger(os.Stdout, true, false)
+	darkitLogger := feymanlee.NewLogger(os.Stdout, true, false)
 	for i := 0; i < iterations; i++ {
 		darkitLogger.Info(message)
 	}
@@ -100,8 +100,8 @@ func testSimpleLogging() {
 		float64(iterations)/logrusTime.Seconds())
 
 	// 性能对比
-	fmt.Printf("\n相对性能 (以darkit/slog为基准):\n")
-	fmt.Printf("- darkit/slog: 1.00x (基准)\n")
+	fmt.Printf("\n相对性能 (以feymanlee/slog为基准):\n")
+	fmt.Printf("- feymanlee/slog: 1.00x (基准)\n")
 	fmt.Printf("- log/slog:    %.2fx\n", float64(slogTime)/float64(darkitTime))
 	fmt.Printf("- zap:         %.2fx\n", float64(zapTime)/float64(darkitTime))
 	fmt.Printf("- logrus:      %.2fx\n", float64(logrusTime)/float64(darkitTime))
@@ -116,17 +116,17 @@ func testStructuredLogging() {
 	timestamp := time.Now()
 	duration := 150 * time.Millisecond
 
-	// darkit/slog 结构化日志
-	fmt.Println("\ndarkit/slog 结构化日志:")
-	darkitLogger := darkit.NewLogger(os.Stdout, false, false)
-	darkit.EnableJSONLogger()
+	// feymanlee/slog 结构化日志
+	fmt.Println("\nfeymanlee/slog 结构化日志:")
+	darkitLogger := feymanlee.NewLogger(os.Stdout, false, false)
+	feymanlee.EnableJSONLogger()
 	darkitLogger.Info("User action performed",
 		"user_id", userID,
 		"action", action,
 		"timestamp", timestamp,
 		"duration", duration,
 	)
-	darkit.DisableJSONLogger()
+	feymanlee.DisableJSONLogger()
 
 	// log/slog 结构化日志
 	fmt.Println("\nlog/slog 结构化日志:")
@@ -156,13 +156,13 @@ func testStructuredLogging() {
 
 // testDLPFeature DLP功能演示
 func testDLPFeature() {
-	fmt.Println("darkit/slog 独有的DLP数据脱敏功能:")
+	fmt.Println("feymanlee/slog 独有的DLP数据脱敏功能:")
 
-	logger := darkit.NewLogger(os.Stdout, false, false)
+	logger := feymanlee.NewLogger(os.Stdout, false, false)
 
 	// 启用DLP功能
-	darkit.EnableDLPLogger()
-	defer darkit.DisableDLPLogger()
+	feymanlee.EnableDLPLogger()
+	defer feymanlee.DisableDLPLogger()
 
 	fmt.Println("\n原始敏感数据:")
 	fmt.Println("手机号: 13812345678")
@@ -183,21 +183,21 @@ func testDLPFeature() {
 
 // testRuntimeControls 运行时控制演示
 func testRuntimeControls() {
-	fmt.Println("darkit/slog 运行时配置演示:")
-	logger := darkit.NewLogger(os.Stdout, false, false)
+	fmt.Println("feymanlee/slog 运行时配置演示:")
+	logger := feymanlee.NewLogger(os.Stdout, false, false)
 	// 切到 debug 并启用 JSON
-	_, _ = darkit.ApplyRuntimeOption("level", "debug")
-	_, _ = darkit.ApplyRuntimeOption("json", "on")
+	_, _ = feymanlee.ApplyRuntimeOption("level", "debug")
+	_, _ = feymanlee.ApplyRuntimeOption("json", "on")
 
 	logger.Debug("runtime switch applied", "mode", "debug+json")
 
-	snap := darkit.GetRuntimeSnapshot()
+	snap := feymanlee.GetRuntimeSnapshot()
 	fmt.Printf("当前状态: level=%v text=%v json=%v dlp=%v\n",
 		snap.Level, snap.TextEnabled, snap.JSONEnabled, snap.DLPEnabled)
 
 	// 恢复默认展示，避免影响后续输出
-	_, _ = darkit.ApplyRuntimeOption("level", "info")
-	_, _ = darkit.ApplyRuntimeOption("json", "off")
+	_, _ = feymanlee.ApplyRuntimeOption("level", "info")
+	_, _ = feymanlee.ApplyRuntimeOption("json", "off")
 }
 
 // testConcurrentPerformance 并发性能测试
@@ -208,11 +208,11 @@ func testConcurrentPerformance() {
 	const iterations = 1000
 	message := "Concurrent logging test"
 
-	// darkit/slog 并发测试
-	fmt.Print("darkit/slog 并发: ")
+	// feymanlee/slog 并发测试
+	fmt.Print("feymanlee/slog 并发: ")
 	start := time.Now()
 	done := make(chan bool, goroutines)
-	darkitLogger := darkit.NewLogger(os.Stdout, true, false)
+	darkitLogger := feymanlee.NewLogger(os.Stdout, true, false)
 
 	for i := 0; i < goroutines; i++ {
 		go func(id int) {
@@ -250,7 +250,7 @@ func testConcurrentPerformance() {
 	fmt.Printf("%.2fms\n", float64(slogConcurrentTime.Nanoseconds())/1e6)
 
 	fmt.Printf("\n并发性能对比:\n")
-	fmt.Printf("- darkit/slog: %.2fms (基准)\n", float64(darkitConcurrentTime.Nanoseconds())/1e6)
+	fmt.Printf("- feymanlee/slog: %.2fms (基准)\n", float64(darkitConcurrentTime.Nanoseconds())/1e6)
 	fmt.Printf("- log/slog:    %.2fms (%.2fx)\n",
 		float64(slogConcurrentTime.Nanoseconds())/1e6,
 		float64(slogConcurrentTime)/float64(darkitConcurrentTime))

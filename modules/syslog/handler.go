@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"slices"
 
-	"github.com/darkit/slog/internal/common"
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/internal/common"
+	"github.com/feymanlee/slog/modules"
 )
 
 const ceePrefix = "@cee: "

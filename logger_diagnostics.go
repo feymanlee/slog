@@ -1,6 +1,6 @@
 package slog
 
-import "github.com/darkit/slog/modules"
+import "github.com/feymanlee/slog/modules"
 
 // ModuleDiagnostics 描述模块健康与指标信息。
 type ModuleDiagnostics struct {

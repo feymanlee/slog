@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 // Handler 以 logfmt 形式输出，便于 Loki/Vector 等收集器解析。

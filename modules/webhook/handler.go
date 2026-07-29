@@ -6,8 +6,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/darkit/slog/internal/common"
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/internal/common"
+	"github.com/feymanlee/slog/modules"
 )
 
 type Option struct {

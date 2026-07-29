@@ -13,7 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/darkit/slog/internal/common"
+	"github.com/feymanlee/slog/internal/common"
 )
 
 const (
@@ -84,31 +84,31 @@ func init() {
 // 仅包含 slog 自己稳定暴露的 wrapper 入口，避免对具体仓库结构或源码路径产生耦合。
 func DefaultCallerSkipPrefixes() []string {
 	return []string{
-		"github.com/darkit/slog.(*Logger)",
-		"github.com/darkit/slog.Debug",
-		"github.com/darkit/slog.Info",
-		"github.com/darkit/slog.Warn",
-		"github.com/darkit/slog.Error",
-		"github.com/darkit/slog.Trace",
-		"github.com/darkit/slog.Fatal",
-		"github.com/darkit/slog.Debugf",
-		"github.com/darkit/slog.Infof",
-		"github.com/darkit/slog.Warnf",
-		"github.com/darkit/slog.Errorf",
-		"github.com/darkit/slog.Tracef",
-		"github.com/darkit/slog.Fatalf",
-		"github.com/darkit/slog.Printf",
-		"github.com/darkit/slog.Println",
-		"github.com/darkit/slog.DebugContext",
-		"github.com/darkit/slog.InfoContext",
-		"github.com/darkit/slog.WarnContext",
-		"github.com/darkit/slog.ErrorContext",
-		"github.com/darkit/slog.TraceContext",
-		"github.com/darkit/slog.DebugfContext",
-		"github.com/darkit/slog.InfofContext",
-		"github.com/darkit/slog.WarnfContext",
-		"github.com/darkit/slog.ErrorfContext",
-		"github.com/darkit/slog.TracefContext",
+		"github.com/feymanlee/slog.(*Logger)",
+		"github.com/feymanlee/slog.Debug",
+		"github.com/feymanlee/slog.Info",
+		"github.com/feymanlee/slog.Warn",
+		"github.com/feymanlee/slog.Error",
+		"github.com/feymanlee/slog.Trace",
+		"github.com/feymanlee/slog.Fatal",
+		"github.com/feymanlee/slog.Debugf",
+		"github.com/feymanlee/slog.Infof",
+		"github.com/feymanlee/slog.Warnf",
+		"github.com/feymanlee/slog.Errorf",
+		"github.com/feymanlee/slog.Tracef",
+		"github.com/feymanlee/slog.Fatalf",
+		"github.com/feymanlee/slog.Printf",
+		"github.com/feymanlee/slog.Println",
+		"github.com/feymanlee/slog.DebugContext",
+		"github.com/feymanlee/slog.InfoContext",
+		"github.com/feymanlee/slog.WarnContext",
+		"github.com/feymanlee/slog.ErrorContext",
+		"github.com/feymanlee/slog.TraceContext",
+		"github.com/feymanlee/slog.DebugfContext",
+		"github.com/feymanlee/slog.InfofContext",
+		"github.com/feymanlee/slog.WarnfContext",
+		"github.com/feymanlee/slog.ErrorfContext",
+		"github.com/feymanlee/slog.TracefContext",
 	}
 }
 

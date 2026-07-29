@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 type customCodec struct{}

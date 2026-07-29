@@ -13,7 +13,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/darkit/slog.git
+git clone https://github.com/feymanlee/slog.git
 cd slog
 
 # 下载依赖
@@ -203,7 +203,7 @@ git clone https://github.com/YOUR_USERNAME/slog.git
 cd slog
 
 # 添加上游仓库
-git remote add upstream https://github.com/darkit/slog.git
+git remote add upstream https://github.com/feymanlee/slog.git
 ```
 
 ### 2. 创建分支
@@ -315,8 +315,8 @@ git push origin v1.x.x
 
 ## 联系方式
 
-- Issues: https://github.com/darkit/slog/issues
-- Discussions: https://github.com/darkit/slog/discussions
+- Issues: https://github.com/feymanlee/slog/issues
+- Discussions: https://github.com/feymanlee/slog/discussions
 
 ## 行为准则
 

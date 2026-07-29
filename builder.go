@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"os"
 
-	gelfmod "github.com/darkit/slog/modules/output/gelf"
-	outputnet "github.com/darkit/slog/modules/output/net"
+	gelfmod "github.com/feymanlee/slog/modules/output/gelf"
+	outputnet "github.com/feymanlee/slog/modules/output/net"
 )
 
 // LoggerBuilder 通过链式方式快速构建 Logger，便于上层按需开启 Text/JSON/DLP、预置分组与字段。

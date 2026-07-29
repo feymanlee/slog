@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	svr "github.com/darkit/slog"
-	"github.com/darkit/slog/internal/common"
+	svr "github.com/feymanlee/slog"
+	"github.com/feymanlee/slog/internal/common"
 )
 
 var errInvalidCodec = errors.New("webhook: invalid codec")

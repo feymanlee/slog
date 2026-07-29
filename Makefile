@@ -1,5 +1,5 @@
 # =============================================================================
-# darkit/slog — Makefile
+# feymanlee/slog — Makefile
 # =============================================================================
 .PHONY: all build vet test lint fmt cover release clean help
 
@@ -94,7 +94,7 @@ lint-fix:
 # =============================================================================
 fmt:
 	$(GOFMT) ./...
-	@command -v goimports >/dev/null 2>&1 && goimports -local github.com/darkit/slog -w . || true
+	@command -v goimports >/dev/null 2>&1 && goimports -local github.com/feymanlee/slog -w . || true
 
 # =============================================================================
 ## tidy: Tidy and verify module dependencies

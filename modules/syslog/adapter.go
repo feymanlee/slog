@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/darkit/slog/modules"
-	outputnet "github.com/darkit/slog/modules/output/net"
+	"github.com/feymanlee/slog/modules"
+	outputnet "github.com/feymanlee/slog/modules/output/net"
 )
 
 // SyslogAdapter Syslog模块适配器

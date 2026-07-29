@@ -1,6 +1,6 @@
 package header
 
-import "github.com/darkit/slog/dlp"
+import "github.com/feymanlee/slog/dlp"
 
 // Config 配置接口定义
 type Config interface {

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 // Options 控制 GELF 输出。

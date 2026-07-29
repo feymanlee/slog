@@ -11,7 +11,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 type configurableTestFormatter struct {

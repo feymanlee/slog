@@ -11,7 +11,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/darkit/slog/dlp"
+	"github.com/feymanlee/slog/dlp"
 )
 
 // FormatterFunc 内部格式化器接口，避免直接依赖formatter包

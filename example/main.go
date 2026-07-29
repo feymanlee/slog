@@ -11,13 +11,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/darkit/slog"
-	"github.com/darkit/slog/dlp"
-	"github.com/darkit/slog/modules"
-	_ "github.com/darkit/slog/modules/formatter" // 自动注册formatter模块
-	_ "github.com/darkit/slog/modules/multi"     // 自动注册multi模块
-	_ "github.com/darkit/slog/modules/syslog"    // 自动注册syslog模块
-	_ "github.com/darkit/slog/modules/webhook"   // 自动注册webhook模块
+	"github.com/feymanlee/slog"
+	"github.com/feymanlee/slog/dlp"
+	"github.com/feymanlee/slog/modules"
+	_ "github.com/feymanlee/slog/modules/formatter" // 自动注册formatter模块
+	_ "github.com/feymanlee/slog/modules/multi"     // 自动注册multi模块
+	_ "github.com/feymanlee/slog/modules/syslog"    // 自动注册syslog模块
+	_ "github.com/feymanlee/slog/modules/webhook"   // 自动注册webhook模块
 )
 
 type contextKey string
@@ -49,7 +49,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println("🚀 darkit/slog 综合功能演示")
+	fmt.Println("🚀 feymanlee/slog 综合功能演示")
 	fmt.Println(strings.Repeat("=", 60))
 
 	// 创建主logger

@@ -1,3 +1,3 @@
-module github.com/darkit/slog
+module github.com/feymanlee/slog
 
 go 1.23

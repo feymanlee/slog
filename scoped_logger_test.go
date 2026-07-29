@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/darkit/slog/modules"
-	"github.com/darkit/slog/modules/formatter"
+	"github.com/feymanlee/slog/modules"
+	"github.com/feymanlee/slog/modules/formatter"
 )
 
 func TestLoggerSetLevelDoesNotAffectOtherLoggers(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 // mockWriter 用于测试的 mock writer

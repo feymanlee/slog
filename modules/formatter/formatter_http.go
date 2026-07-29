@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/darkit/slog/internal/common"
+	"github.com/feymanlee/slog/internal/common"
 )
 
 // HTTPRequestFormatter transforms a *http.Request into a readable object.

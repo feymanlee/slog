@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/darkit/slog/internal/common"
+	"github.com/feymanlee/slog/internal/common"
 )
 
 // TimeFormatter transforms a `time.Time` into a readable string.

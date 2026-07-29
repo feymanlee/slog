@@ -1,11 +1,11 @@
 ---
-name: darkit-slog
-description: "Production-grade Go structured logging guidance for github.com/darkit/slog. Use when integrating, reviewing, or modifying darkit/slog logging: JSON/Text output, log/slog compatibility mapping, DLP masking, context propagation, subscriptions, runtime level control, file rotation, formatter modules, multi-output pipelines, and production performance or troubleshooting."
+name: feymanlee-slog
+description: "Production-grade Go structured logging guidance for github.com/feymanlee/slog. Use when integrating, reviewing, or modifying feymanlee/slog logging: JSON/Text output, log/slog compatibility mapping, DLP masking, context propagation, subscriptions, runtime level control, file rotation, formatter modules, multi-output pipelines, and production performance or troubleshooting."
 ---
 
-# darkit-slog
+# feymanlee-slog
 
-Use this skill to work with `github.com/darkit/slog`, a Go 1.23+ structured logging module built around the standard `log/slog` model plus DLP masking, runtime controls, subscriptions, and output modules.
+Use this skill to work with `github.com/feymanlee/slog`, a Go 1.23+ structured logging module built around the standard `log/slog` model plus DLP masking, runtime controls, subscriptions, and output modules.
 
 Keep `SKILL.md` as the routing layer. Load only the reference or asset that matches the user's task.
 
@@ -35,7 +35,7 @@ Keep `SKILL.md` as the routing layer. Load only the reference or asset that matc
 Think in six layers:
 
 1. **Core Logger**: `Default()`, `SetDefault()`, `NewLoggerBuilder()`, `With()`, `WithGroup()`.
-2. **Standard surface**: root package maps common `log/slog` types and constructors, so callers normally import only `github.com/darkit/slog`.
+2. **Standard surface**: root package maps common `log/slog` types and constructors, so callers normally import only `github.com/feymanlee/slog`.
 3. **Level and format**: Trace, Debug, Info, Warn, Error, Fatal plus runtime Text/JSON toggles.
 4. **Context and DLP**: context propagator injects fields; DLP masks messages, attrs, and tagged structs.
 5. **Pipeline**: handler, writer, formatter, subscription, and output modules fan records out.
@@ -43,7 +43,7 @@ Think in six layers:
 
 ## Coding rules for generated examples
 
-- Import `github.com/darkit/slog` as the only logging package unless a submodule is explicitly needed.
+- Import `github.com/feymanlee/slog` as the only logging package unless a submodule is explicitly needed.
 - Do not import `log/slog` in user-facing examples; use root aliases such as `slog.Attr`, `slog.HandlerOptions`, `slog.NewTextHandler`, `slog.NewJSONHandler`, and `slog.LevelVar`.
 - Prefer structured key-value logs over formatted strings for production paths.
 - Use typed attrs (`slog.String`, `slog.Int`, `slog.Duration`, `slog.GroupAttrs`) when values are known.

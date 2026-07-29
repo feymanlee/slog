@@ -69,7 +69,7 @@ logger.Info("event", "component", "worker")
 For GELF or raw TCP/UDP, import only the specific module package needed:
 
 ```go
-import outputnet "github.com/darkit/slog/modules/output/net"
+import outputnet "github.com/feymanlee/slog/modules/output/net"
 
 logger := slog.NewLoggerBuilder().
     UseNetOutput(&outputnet.SenderOption{

@@ -7,7 +7,7 @@
 //
 // # Installation
 //
-//	go get github.com/darkit/slog@latest
+//	go get github.com/feymanlee/slog@latest
 //
 // # Quick Start
 //
@@ -121,9 +121,9 @@
 //
 // # Performance
 //
-//	DLP cache hit:       ~46 ns/op
-//	Cache key (xxhash64): ~314 ns/op
-//	Memory reuse rate:   95%+ (tiered object pools)
+// Run benchmarks on the target Go version and hardware:
 //
-// For more information, see https://pkg.go.dev/github.com/darkit/slog
+//	go test -run '^$' -bench . -benchmem ./...
+//
+// For more information, see https://pkg.go.dev/github.com/feymanlee/slog
 package slog

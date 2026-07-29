@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"slices"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 var (

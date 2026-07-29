@@ -3,7 +3,7 @@ package multi
 import (
 	"log/slog"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 // MultiAdapter Multi模块适配器

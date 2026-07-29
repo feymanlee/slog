@@ -5,7 +5,7 @@ Use this reference for basic integration, production setup, and file logging.
 ## Minimal import
 
 ```go
-import "github.com/darkit/slog"
+import "github.com/feymanlee/slog"
 ```
 
 Use the root package for both enhanced APIs and standard `log/slog`-style attrs.

@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 // NetAdapter sends records to generic TCP/UDP endpoints.

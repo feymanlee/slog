@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/darkit/slog/internal/common"
+	"github.com/feymanlee/slog/internal/common"
 )
 
 // Codec converts slog records into bytes for network transport.

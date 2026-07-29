@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	zslog "github.com/darkit/slog"
+	zslog "github.com/feymanlee/slog"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -18,7 +18,7 @@ func BenchmarkSimpleMessage(b *testing.B) {
 	message := "Simple log message for performance comparison"
 
 	// 设置各种logger
-	// darkit/slog (我们的库)
+	// feymanlee/slog (我们的库)
 	darkitLogger := zslog.NewLogger(io.Discard, true, false) // noColor=true
 
 	// log/slog (Go标准库)
@@ -38,7 +38,7 @@ func BenchmarkSimpleMessage(b *testing.B) {
 	)
 	zapLogger := zap.New(zapCore)
 
-	b.Run("darkit/slog", func(b *testing.B) {
+	b.Run("feymanlee/slog", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			darkitLogger.Info(message)
@@ -74,7 +74,7 @@ func BenchmarkStructuredLogging(b *testing.B) {
 	action := "login"
 	timestamp := time.Now()
 
-	// darkit/slog JSON模式
+	// feymanlee/slog JSON模式
 	darkitLogger := zslog.NewLogger(io.Discard, true, false)
 	zslog.EnableJSONLogger()
 	zslog.DisableTextLogger()
@@ -100,7 +100,7 @@ func BenchmarkStructuredLogging(b *testing.B) {
 	)
 	zapJSONLogger := zap.New(zapJSONCore)
 
-	b.Run("darkit/slog-json", func(b *testing.B) {
+	b.Run("feymanlee/slog-json", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			darkitLogger.Info(message,
@@ -156,7 +156,7 @@ func BenchmarkDLPFeature(b *testing.B) {
 	email := "user@example.com"
 	idCard := "123456789012345678"
 
-	b.Run("darkit/slog-without-dlp", func(b *testing.B) {
+	b.Run("feymanlee/slog-without-dlp", func(b *testing.B) {
 		zslog.DisableDLPLogger() // 确保DLP关闭
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -168,7 +168,7 @@ func BenchmarkDLPFeature(b *testing.B) {
 		}
 	})
 
-	b.Run("darkit/slog-with-dlp", func(b *testing.B) {
+	b.Run("feymanlee/slog-with-dlp", func(b *testing.B) {
 		zslog.EnableDLPLogger() // 启用DLP功能
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -215,7 +215,7 @@ func BenchmarkMemoryAllocation(b *testing.B) {
 		"active":    true,
 	}
 
-	b.Run("darkit/slog-memory", func(b *testing.B) {
+	b.Run("feymanlee/slog-memory", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -253,7 +253,7 @@ func BenchmarkMemoryAllocation(b *testing.B) {
 func BenchmarkConcurrentLogging(b *testing.B) {
 	message := "Concurrent logging test"
 
-	b.Run("darkit/slog-concurrent", func(b *testing.B) {
+	b.Run("feymanlee/slog-concurrent", func(b *testing.B) {
 		darkitLogger := zslog.NewLogger(io.Discard, true, false)
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
@@ -300,7 +300,7 @@ func BenchmarkWithFields(b *testing.B) {
 
 	message := "Bound fields logging"
 
-	b.Run("darkit/slog-with-fields", func(b *testing.B) {
+	b.Run("feymanlee/slog-with-fields", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			darkitLogger.With("request_id", "req-123", "trace_id", "trace-456").Info(message)
@@ -342,7 +342,7 @@ func BenchmarkContextPropagation(b *testing.B) {
 	ctxLogger := zslog.NewLogger(io.Discard, true, false).WithContext(ctx)
 	message := "Context-aware logging"
 
-	b.Run("darkit/slog-context-propagation", func(b *testing.B) {
+	b.Run("feymanlee/slog-context-propagation", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			ctxLogger.Info(message)

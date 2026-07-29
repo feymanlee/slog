@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/darkit/slog"
+	"github.com/feymanlee/slog"
 )
 
 func TestRootPackageProvidesStdSlogSurface(t *testing.T) {

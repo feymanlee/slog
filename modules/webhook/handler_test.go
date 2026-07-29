@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 func TestWebhookHandler_Enabled(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/darkit/slog/internal/dlp/cachekey"
+	"github.com/feymanlee/slog/internal/dlp/cachekey"
 )
 
 // BaseDesensitizer 基础脱敏器实现

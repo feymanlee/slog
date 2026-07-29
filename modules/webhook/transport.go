@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	svr "github.com/darkit/slog"
+	svr "github.com/feymanlee/slog"
 )
 
 var defaultHTTPClient = &http.Client{

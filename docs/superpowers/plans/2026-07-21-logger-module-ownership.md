@@ -59,7 +59,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 func TestFormatterAdapterConfigureReplacesPreviousFormatters(t *testing.T) {
@@ -221,7 +221,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 type configurableTestFormatter struct {
@@ -423,7 +423,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 var (

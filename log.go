@@ -15,8 +15,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	gelfmod "github.com/darkit/slog/modules/output/gelf"
-	logfmtmod "github.com/darkit/slog/modules/output/logfmt"
+	gelfmod "github.com/feymanlee/slog/modules/output/gelf"
+	logfmtmod "github.com/feymanlee/slog/modules/output/logfmt"
 )
 
 var (

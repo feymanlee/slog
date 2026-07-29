@@ -3,7 +3,7 @@ package webhook
 import (
 	"testing"
 
-	"github.com/darkit/slog/modules"
+	"github.com/feymanlee/slog/modules"
 )
 
 func TestWebhookAdapter_ConfigureWithCodec(t *testing.T) {
