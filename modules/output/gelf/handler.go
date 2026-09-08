@@ -3,6 +3,7 @@ package gelf
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"log/slog"
 	"os"
 	"strings"
@@ -13,7 +14,7 @@ import (
 
 // Options 控制 GELF 输出。
 type Options struct {
-	Writer      modules.WriteSyncer
+	Writer      io.Writer
 	Level       slog.Leveler
 	Host        string
 	Facility    string
@@ -23,7 +24,7 @@ type Options struct {
 
 // Handler 兼容 GELF 1.1。
 type Handler struct {
-	w           modules.WriteSyncer
+	w           io.Writer
 	mu          sync.Mutex
 	level       slog.Leveler
 	replaceAttr func(groups []string, a slog.Attr) slog.Attr
@@ -35,7 +36,7 @@ type Handler struct {
 // New 创建 handler。
 func New(opt Options) *Handler {
 	if opt.Writer == nil {
-		opt.Writer = modules.NewStdWriter()
+		opt.Writer = os.Stdout
 	}
 	if opt.Level == nil {
 		opt.Level = slog.LevelInfo

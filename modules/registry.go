@@ -3,8 +3,6 @@ package modules
 import (
 	"fmt"
 	"log/slog"
-	"reflect"
-	"sort"
 	"sync"
 )
 
@@ -64,17 +62,13 @@ type ModuleFactory func(config Config) (Module, error)
 // Registry 模块注册中心
 type Registry struct {
 	mu        sync.RWMutex
-	modules   map[string]Module
 	factories map[string]ModuleFactory
-	chains    map[ModuleType][]Module
 }
 
 // NewRegistry 创建新的注册中心
 func NewRegistry() *Registry {
 	return &Registry{
-		modules:   make(map[string]Module),
 		factories: make(map[string]ModuleFactory),
-		chains:    make(map[ModuleType][]Module),
 	}
 }
 
@@ -95,47 +89,6 @@ func (r *Registry) RegisterFactory(name string, factory ModuleFactory) error {
 	return nil
 }
 
-// Register 注册模块实例
-func (r *Registry) Register(module Module) error {
-	if isNilModule(module) {
-		return fmt.Errorf("module cannot be nil")
-	}
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	name := module.Name()
-	if _, exists := r.modules[name]; exists {
-		return fmt.Errorf("module %s already registered", name)
-	}
-
-	r.modules[name] = module
-
-	// 添加到类型链中
-	moduleType := module.Type()
-	r.chains[moduleType] = append(r.chains[moduleType], module)
-
-	// 按优先级排序
-	sort.Slice(r.chains[moduleType], func(i, j int) bool {
-		return r.chains[moduleType][i].Priority() < r.chains[moduleType][j].Priority()
-	})
-
-	return nil
-}
-
-func isNilModule(module Module) bool {
-	if module == nil {
-		return true
-	}
-	value := reflect.ValueOf(module)
-	switch value.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
-		return value.IsNil()
-	default:
-		return false
-	}
-}
-
 // Create 通过工厂创建模块
 func (r *Registry) Create(name string, config Config) (Module, error) {
 	r.mu.RLock()
@@ -149,37 +102,6 @@ func (r *Registry) Create(name string, config Config) (Module, error) {
 	return factory(config)
 }
 
-// Get 获取模块
-func (r *Registry) Get(name string) (Module, bool) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	module, exists := r.modules[name]
-	return module, exists
-}
-
-// GetByType 按类型获取模块列表
-func (r *Registry) GetByType(moduleType ModuleType) []Module {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	modules := make([]Module, len(r.chains[moduleType]))
-	copy(modules, r.chains[moduleType])
-	return modules
-}
-
-// List 列出所有模块
-func (r *Registry) List() []Module {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	modules := make([]Module, 0, len(r.modules))
-	for _, module := range r.modules {
-		modules = append(modules, module)
-	}
-	return modules
-}
-
 // ListFactories 列出所有已注册的工厂名称
 func (r *Registry) ListFactories() []string {
 	r.mu.RLock()
@@ -190,42 +112,6 @@ func (r *Registry) ListFactories() []string {
 		factories = append(factories, name)
 	}
 	return factories
-}
-
-// Remove 移除模块
-func (r *Registry) Remove(name string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	module, exists := r.modules[name]
-	if !exists {
-		return fmt.Errorf("module %s not found", name)
-	}
-
-	delete(r.modules, name)
-
-	// 从类型链中移除
-	moduleType := module.Type()
-	chain := r.chains[moduleType]
-	for i, m := range chain {
-		if m.Name() == name {
-			r.chains[moduleType] = append(chain[:i], chain[i+1:]...)
-			break
-		}
-	}
-
-	return nil
-}
-
-// Update 重新配置已注册模块
-func (r *Registry) Update(name string, config Config) error {
-	r.mu.RLock()
-	module, exists := r.modules[name]
-	r.mu.RUnlock()
-	if !exists {
-		return fmt.Errorf("module %s not found", name)
-	}
-	return module.Configure(config)
 }
 
 // BaseModule 基础模块实现
@@ -271,11 +157,6 @@ func (m *BaseModule) SetEnabled(enabled bool) {
 // 全局注册中心
 var globalRegistry = NewRegistry()
 
-// RegisterModule 全局注册模块
-func RegisterModule(module Module) error {
-	return globalRegistry.Register(module)
-}
-
 // RegisterFactory 全局注册工厂
 func RegisterFactory(name string, factory ModuleFactory) error {
 	return globalRegistry.RegisterFactory(name, factory)
@@ -288,11 +169,6 @@ func NewHandlerModule(name string, handler slog.Handler) Module {
 	return m
 }
 
-// GetModule 全局获取模块
-func GetModule(name string) (Module, bool) {
-	return globalRegistry.Get(name)
-}
-
 // CreateModule 全局创建模块
 func CreateModule(name string, config Config) (Module, error) {
 	return globalRegistry.Create(name, config)
@@ -301,9 +177,4 @@ func CreateModule(name string, config Config) (Module, error) {
 // GetRegistry 获取全局注册中心
 func GetRegistry() *Registry {
 	return globalRegistry
-}
-
-// UpdateModuleConfig 重新配置现有模块
-func UpdateModuleConfig(name string, config Config) error {
-	return globalRegistry.Update(name, config)
 }

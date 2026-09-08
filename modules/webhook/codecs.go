@@ -5,11 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
-	"maps"
 	"net/http"
 	"strings"
-	"sync"
-	"time"
 
 	svr "github.com/feymanlee/slog"
 	"github.com/feymanlee/slog/internal/common"
@@ -23,12 +20,7 @@ type Codec interface {
 	Encode(ctx context.Context, record *slog.Record, attrs []slog.Attr, groups []string) ([]byte, error)
 }
 
-type codecRegistry struct {
-	mu     sync.RWMutex
-	codecs map[string]Codec
-}
-
-var globalCodecs = &codecRegistry{codecs: map[string]Codec{}}
+var globalCodecs = common.NewNamedRegistry[Codec]()
 
 func init() {
 	_ = RegisterCodec(defaultCodec{})
@@ -40,21 +32,12 @@ func RegisterCodec(codec Codec) error {
 		return errInvalidCodec
 	}
 	name := strings.ToLower(strings.TrimSpace(codec.Name()))
-	globalCodecs.mu.Lock()
-	defer globalCodecs.mu.Unlock()
-	globalCodecs.codecs[name] = codec
+	globalCodecs.Set(name, codec)
 	return nil
 }
 
 func GetCodec(name string) (Codec, bool) {
-	if strings.TrimSpace(name) == "" {
-		name = "default"
-	}
-	name = strings.ToLower(strings.TrimSpace(name))
-	globalCodecs.mu.RLock()
-	defer globalCodecs.mu.RUnlock()
-	codec, ok := globalCodecs.codecs[name]
-	return codec, ok
+	return globalCodecs.Get(name, "default")
 }
 
 type defaultCodec struct{}
@@ -105,16 +88,7 @@ type jsonCodec struct{}
 func (c jsonCodec) Name() string { return "json" }
 
 func (c jsonCodec) Encode(_ context.Context, record *slog.Record, attrs []slog.Attr, groups []string) ([]byte, error) {
-	flat := common.AttrsToMap(common.AppendRecordAttrsToAttrs(attrs, groups, record)...)
-	payload := map[string]any{
-		"level":   record.Level.String(),
-		"message": record.Message,
-	}
-	if !record.Time.IsZero() {
-		payload["timestamp"] = record.Time.UTC().Format(time.RFC3339Nano)
-	}
-	maps.Copy(payload, flat)
-	return json.Marshal(payload)
+	return json.Marshal(common.JSONRecordPayload(record, attrs, groups, false))
 }
 
 var (

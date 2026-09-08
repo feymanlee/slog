@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 	"sync"
-	"sync/atomic"
 )
 
 // LoggerManager 全局日志管理器，负责管理所有logger实例
@@ -16,7 +15,6 @@ type LoggerManager struct {
 	defaultLogger *Logger
 	instances     map[string]*Logger
 	config        *GlobalConfig
-	initialized   atomic.Bool
 }
 
 // GlobalConfig 全局配置，与实例配置分离
@@ -202,7 +200,6 @@ func (lm *LoggerManager) Reset() {
 
 	lm.defaultLogger = nil
 	lm.instances = make(map[string]*Logger)
-	lm.initialized.Store(false)
 }
 
 // ListInstances 列出所有已创建的logger实例名称

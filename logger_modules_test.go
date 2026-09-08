@@ -3,7 +3,6 @@ package slog
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	stdslog "log/slog"
@@ -109,7 +108,7 @@ func TestLoggerUseWithErrorRejectsInvalidModules(t *testing.T) {
 		module modules.Module
 	}{
 		{name: "nil interface"},
-		{name: "typed nil", module: (*trackingModule)(nil)},
+		{name: "typed nil", module: (*configurableTestFormatter)(nil)},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -308,12 +307,6 @@ func TestModuleObservationUsesLoggerLineage(t *testing.T) {
 	if got := CollectModuleDiagnostics(); len(got) != 2 || got[0].Name != "first-only" || got[1].Name != "first-second" {
 		t.Fatalf("unexpected default diagnostics: %+v", got)
 	}
-	if _, exists := modules.GetModule("first-only"); exists {
-		t.Fatal("Logger.Use must not write into the legacy global registry")
-	}
-	if _, exists := modules.GetModule("first-second"); exists {
-		t.Fatal("Logger.Use must not write the second module into the legacy global registry")
-	}
 }
 
 func TestLoggerManagerConfigurePreservesModuleLineage(t *testing.T) {
@@ -370,77 +363,6 @@ func TestLoggerUpdateModuleConfigStaysWithinLineage(t *testing.T) {
 	}
 	if !strings.Contains(secondBuf.String(), "value=second:x") {
 		t.Fatalf("independent lineage changed: %q", secondBuf.String())
-	}
-}
-
-type trackingModule struct {
-	*modules.BaseModule
-	mu    sync.Mutex
-	calls int
-	err   error
-}
-
-func newTrackingModule(name string) *trackingModule {
-	return &trackingModule{BaseModule: modules.NewBaseModule(name, modules.TypeHandler, 100)}
-}
-
-func (m *trackingModule) Configure(config modules.Config) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.calls++
-	if m.err != nil {
-		return m.err
-	}
-	return m.BaseModule.Configure(config)
-}
-
-func (m *trackingModule) configureCalls() int {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.calls
-}
-
-func TestPackageUpdateFallsBackOnlyWhenDefaultModuleIsMissing(t *testing.T) {
-	resetForTest()
-	name := "legacy-fallback-test"
-	legacy := newTrackingModule(name)
-	if err := modules.RegisterModule(legacy); err != nil {
-		t.Fatalf("register legacy module: %v", err)
-	}
-	t.Cleanup(func() { _ = modules.GetRegistry().Remove(name) })
-
-	if err := UpdateModuleConfig(name, modules.Config{"enabled": true}); err != nil {
-		t.Fatalf("fallback update: %v", err)
-	}
-	if got := legacy.configureCalls(); got != 1 {
-		t.Fatalf("expected one legacy update, got %d", got)
-	}
-}
-
-func TestPackageUpdateDoesNotHideDefaultModuleError(t *testing.T) {
-	resetForTest()
-	name := "default-error-test"
-	wantErr := errors.New("configuration rejected")
-	local := newConfigurableTestFormatter(name, "value", "local:")
-	local.err = wantErr
-	defaultLogger := NewLogger(&bytes.Buffer{}, true, false)
-	if err := defaultLogger.UseWithError(local); err != nil {
-		t.Fatal(err)
-	}
-	SetDefault(defaultLogger)
-
-	legacy := newTrackingModule(name)
-	if err := modules.RegisterModule(legacy); err != nil {
-		t.Fatalf("register legacy module: %v", err)
-	}
-	t.Cleanup(func() { _ = modules.GetRegistry().Remove(name) })
-
-	err := UpdateModuleConfig(name, modules.Config{"key": "value", "prefix": "new:"})
-	if !errors.Is(err, wantErr) {
-		t.Fatalf("expected local configuration error, got %v", err)
-	}
-	if got := legacy.configureCalls(); got != 0 {
-		t.Fatalf("legacy fallback must not run, got %d calls", got)
 	}
 }
 

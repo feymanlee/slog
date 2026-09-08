@@ -2,9 +2,8 @@ package formatter
 
 import (
 	"log/slog"
+	"slices"
 	"time"
-
-	"github.com/feymanlee/slog/internal/common"
 )
 
 // TimeFormatter transforms a `time.Time` into a readable string.
@@ -26,7 +25,7 @@ func TimeFormatter(timeFormat string, location *time.Location) Formatter {
 
 // UnixTimestampFormatter transforms a `time.Time` into a unix timestamp.
 func UnixTimestampFormatter(precision time.Duration) Formatter {
-	if !common.Contains([]time.Duration{time.Nanosecond, time.Microsecond, time.Millisecond, time.Second}, precision) {
+	if !slices.Contains([]time.Duration{time.Nanosecond, time.Microsecond, time.Millisecond, time.Second}, precision) {
 		panic("slog-formatter: unexpected precision")
 	}
 

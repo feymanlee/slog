@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0] - 2026-09-08
+
+### Removed
+
+- Removed the unused tiered buffer and string-builder pool subsystem.
+- Removed the legacy `dlp/header` wrapper package and no-op plugin API.
+- Removed the global module instance registry; module factories remain available.
+- Removed unused module capability interfaces and cache-key modes.
+- Replaced the `WriteSyncer` wrapper with the standard `io.Writer` interface.
+
+### Changed
+
+- Shared codec registry and JSON record payload helpers across output modules.
+- Cache-key generation now keeps only the runtime paths used by DLP.
+
+### Quality
+
+- Removed tests and benchmarks for deleted subsystems and retained coverage for
+  the active module and cache-key paths.
+
 ## [v0.2.1] - 2026-07-29
 
 ### Fixed
@@ -69,6 +89,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 | ------------ | ------------------ |
 | v0.2.x       | Go 1.23            |
 
-[unreleased]: https://github.com/feymanlee/slog/compare/v0.2.1...HEAD
+[unreleased]: https://github.com/feymanlee/slog/compare/v1.0.0...HEAD
+[v1.0.0]: https://github.com/feymanlee/slog/releases/tag/v1.0.0
 [v0.2.1]: https://github.com/feymanlee/slog/releases/tag/v0.2.1
 [v0.2.0]: https://github.com/feymanlee/slog/releases/tag/v0.2.0

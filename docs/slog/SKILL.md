@@ -59,7 +59,7 @@ Use the smallest set that covers the risk:
 | --- | --- |
 | Documentation or templates only | `python /root/.codex/skills/.system/skill-creator/scripts/quick_validate.py docs/slog` and grep for stale paths |
 | Public API examples | `go test ./...` plus compile a copied template if practical |
-| DLP behavior | `go test ./dlp ./dlp/header` and add table tests for false positives/disabled matchers |
+| DLP behavior | `go test ./dlp` and add table tests for false positives/disabled matchers |
 | Concurrency/subscription/output | `go test -race ./...` |
 | Security-sensitive output, DLP, file/network writer | `gosec ./...` if available |
 | Module dependencies or generated code | `go mod tidy && go mod verify` |

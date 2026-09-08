@@ -72,14 +72,7 @@ func (l *Logger) UpdateModuleConfig(name string, config modules.Config) error {
 
 // UpdateModuleConfig 热更新默认 Logger 中已注册模块的配置。
 func UpdateModuleConfig(name string, config modules.Config) error {
-	logger := GetGlobalLogger()
-	if err := logger.UpdateModuleConfig(name, config); err != nil {
-		if errors.Is(err, errLoggerModuleNotFound) {
-			return modules.UpdateModuleConfig(name, config)
-		}
-		return err
-	}
-	return nil
+	return GetGlobalLogger().UpdateModuleConfig(name, config)
 }
 
 // RegisteredModules 返回当前已注册的模块名称。

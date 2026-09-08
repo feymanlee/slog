@@ -314,10 +314,6 @@ func demoModuleSystem() {
 		fmt.Printf("     ✓ %s\n", name)
 	}
 
-	// 查看已创建的模块实例
-	moduleInstances := registry.List()
-	fmt.Printf("   已创建模块实例数量: %d\n", len(moduleInstances))
-
 	fmt.Println("\n🚀 模块使用方式:")
 
 	// 方式1: 直接创建并启用模块

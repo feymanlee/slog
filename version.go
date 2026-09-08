@@ -2,5 +2,5 @@ package slog
 
 const (
 	Name    = "feymanlee/slog"
-	Version = "v0.2.1"
+	Version = "v1.0.0"
 )

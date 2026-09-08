@@ -94,25 +94,6 @@ func (e *DlpEngine) IsEnabled() bool {
 	return e.enabled.Load()
 }
 
-// IsPluginArchitectureEnabled 兼容接口，固定返回 false。
-func (e *DlpEngine) IsPluginArchitectureEnabled() bool {
-	return false
-}
-
-// EnablePluginArchitecture 兼容接口，当前无操作。
-func (e *DlpEngine) EnablePluginArchitecture() {}
-
-// DisablePluginArchitecture 兼容接口，当前无操作。
-func (e *DlpEngine) DisablePluginArchitecture() {}
-
-// GetSupportedTypesWithPlugin 兼容接口，返回当前类型映射。
-func (e *DlpEngine) GetSupportedTypesWithPlugin() map[string][]string {
-	if e == nil || e.manager == nil {
-		return nil
-	}
-	return e.manager.GetTypeMapping()
-}
-
 // Version 返回当前规则版本（热更新计数）。
 func (e *DlpEngine) Version() int64 {
 	if e == nil || e.manager == nil {

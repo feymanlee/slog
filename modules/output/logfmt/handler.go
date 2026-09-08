@@ -3,7 +3,9 @@ package logfmt
 import (
 	"bytes"
 	"context"
+	"io"
 	"log/slog"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,7 +16,7 @@ import (
 
 // Handler 以 logfmt 形式输出，便于 Loki/Vector 等收集器解析。
 type Handler struct {
-	w           modules.WriteSyncer
+	w           io.Writer
 	mu          sync.Mutex
 	level       slog.Leveler
 	replaceAttr func(groups []string, a slog.Attr) slog.Attr
@@ -24,7 +26,7 @@ type Handler struct {
 
 // Option 用于创建 Handler。
 type Option struct {
-	Writer      modules.WriteSyncer
+	Writer      io.Writer
 	Level       slog.Leveler
 	AddSource   bool
 	TimeFormat  string
@@ -34,7 +36,7 @@ type Option struct {
 // New 创建 Handler。
 func New(opt Option) *Handler {
 	if opt.Writer == nil {
-		opt.Writer = modules.NewStdWriter()
+		opt.Writer = os.Stdout
 	}
 	if opt.Level == nil {
 		opt.Level = slog.LevelInfo

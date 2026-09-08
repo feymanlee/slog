@@ -450,7 +450,7 @@ make help           # 查看所有目标
 ## 文档
 
 - [GitHub 仓库](https://github.com/feymanlee/slog)
-- [v0.2.1 Release](https://github.com/feymanlee/slog/releases/tag/v0.2.1)
+- [v1.0.0 Release](https://github.com/feymanlee/slog/releases/tag/v1.0.0)
 - [API 参考](https://pkg.go.dev/github.com/feymanlee/slog)
 - [模块系统说明](./modules/README.md)
 - [领域术语](./CONTEXT.md)
