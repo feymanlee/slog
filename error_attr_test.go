@@ -27,6 +27,9 @@ func TestErrAttrExpandsErrorWithStack(t *testing.T) {
 	if !strings.Contains(fields["stacktrace"].(string), "TestErrAttrExpandsErrorWithStack") {
 		t.Fatalf("stacktrace = %v", fields["stacktrace"])
 	}
+	if strings.Contains(fields["stacktrace"].(string), "(*Logger).logRecord") {
+		t.Fatalf("stacktrace contains slog internals: %v", fields["stacktrace"])
+	}
 }
 
 func TestLoggerExpandsErrorAttribute(t *testing.T) {

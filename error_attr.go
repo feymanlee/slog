@@ -4,6 +4,7 @@ import (
 	"fmt"
 	stdslog "log/slog"
 	"runtime/debug"
+	"strings"
 )
 
 // errAttr expands an error attribute into searchable error details and a stack trace.
@@ -25,8 +26,32 @@ func errAttr(attr stdslog.Attr) stdslog.Attr {
 	return Group("error",
 		String("message", err.Error()),
 		String("type", fmt.Sprintf("%T", err)),
-		String("stacktrace", string(debug.Stack())),
+		String("stacktrace", errorStack()),
 	)
+}
+
+func errorStack() string {
+	lines := strings.Split(string(debug.Stack()), "\n")
+	if len(lines) < 3 {
+		return strings.Join(lines, "\n")
+	}
+
+	for i := 1; i+1 < len(lines); i += 2 {
+		if isSlogStackFrame(lines[i]) {
+			continue
+		}
+		return strings.Join(append([]string{lines[0]}, lines[i:]...), "\n")
+	}
+	return strings.Join(lines, "\n")
+}
+
+func isSlogStackFrame(function string) bool {
+	if strings.Contains(function, "github.com/feymanlee/slog.Test") {
+		return false
+	}
+	return strings.Contains(function, "github.com/feymanlee/slog.") ||
+		strings.Contains(function, "log/slog.") ||
+		strings.HasPrefix(function, "runtime/")
 }
 
 func normalizeErrorAttrs(attrs []stdslog.Attr) []stdslog.Attr {
