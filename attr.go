@@ -200,6 +200,11 @@ func Any(key string, v any) Attr {
 	return stdslog.Any(key, v)
 }
 
+// ErrAttr 将错误构造成标准 error 属性。
+func ErrAttr(err error) Attr {
+	return Any("error", err)
+}
+
 // Bool 映射标准库 log/slog.Bool。
 func Bool(key string, v bool) Attr {
 	return stdslog.Bool(key, v)

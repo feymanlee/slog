@@ -68,3 +68,15 @@ func TestErrAttrKeepsNilAndNonErrorValues(t *testing.T) {
 		t.Fatalf("plain error attr changed: %v", got)
 	}
 }
+
+func TestErrAttr(t *testing.T) {
+	err := errors.New("database unavailable")
+	attr := ErrAttr(err)
+
+	if attr.Key != "error" {
+		t.Fatalf("key = %q, want error", attr.Key)
+	}
+	if got := attr.Value.Any(); got != err {
+		t.Fatalf("value = %v, want original error", got)
+	}
+}
