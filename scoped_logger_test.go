@@ -56,7 +56,7 @@ func TestLoggerUseFormatterDoesNotAffectOtherLoggers(t *testing.T) {
 
 	err := errors.New("boom")
 	formatted.Error("formatted", "error", err)
-	plain.Error("plain", "error", err)
+	plain.Error("plain", Err(err))
 
 	if !strings.Contains(formattedBuf.String(), "error.message=boom") {
 		t.Fatalf("expected formatter on selected logger, got %q", formattedBuf.String())

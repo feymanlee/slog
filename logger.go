@@ -469,7 +469,7 @@ func (l *Logger) logRecord(level Level, ctx context.Context, msg string, sprintf
 	} else {
 		r = newRecordWithPC(level, recordPC, msg)
 		appendBoundAttrs(&r, l.boundAttrs)
-		r.AddAttrs(normalizeErrorAttrs(argsToAttrs(args))...)
+		r.AddAttrs(argsToAttrs(args)...)
 	}
 
 	if textEnabledForInstance && l.text != nil && l.text.Enabled(ctx, level) {
@@ -902,7 +902,7 @@ func appendBoundAttrs(r *slog.Record, attrs []slog.Attr) {
 	if r == nil || len(attrs) == 0 {
 		return
 	}
-	r.AddAttrs(normalizeErrorAttrs(attrs)...)
+	r.AddAttrs(attrs...)
 }
 
 func (l *Logger) materializedSlogLogger(base *slog.Logger) *slog.Logger {

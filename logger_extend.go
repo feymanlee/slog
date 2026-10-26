@@ -377,8 +377,6 @@ func (h *eHandler) transformAttrs(groups []string, attrs []slog.Attr) []slog.Att
 }
 
 func (h *eHandler) transformAttr(groups []string, attr slog.Attr) slog.Attr {
-	attr = errAttr(attr)
-
 	// 先处理LogValuer
 	for attr.Value.Kind() == slog.KindLogValuer {
 		attr.Value = attr.Value.LogValuer().LogValue()

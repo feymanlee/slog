@@ -2,27 +2,15 @@ package slog
 
 import (
 	"fmt"
-	stdslog "log/slog"
 	"runtime/debug"
 	"strings"
 )
 
-// errAttr expands an error attribute into searchable error details and a stack trace.
-func errAttr(attr stdslog.Attr) stdslog.Attr {
-	if attr.Key != "error" {
-		return attr
+// Err 将错误构造成带 message、type 和 stacktrace 的 error 属性。
+func Err(err error) Attr {
+	if err == nil {
+		return Attr{}
 	}
-
-	value := attr.Value.Resolve()
-	raw := value.Any()
-	if raw == nil {
-		return stdslog.Attr{}
-	}
-	err, ok := raw.(error)
-	if !ok || err == nil {
-		return attr
-	}
-
 	return Group("error",
 		String("message", err.Error()),
 		String("type", fmt.Sprintf("%T", err)),
@@ -52,15 +40,4 @@ func isSlogStackFrame(function string) bool {
 	return strings.Contains(function, "github.com/feymanlee/slog.") ||
 		strings.Contains(function, "log/slog.") ||
 		strings.HasPrefix(function, "runtime/")
-}
-
-func normalizeErrorAttrs(attrs []stdslog.Attr) []stdslog.Attr {
-	if len(attrs) == 0 {
-		return attrs
-	}
-	normalized := make([]stdslog.Attr, len(attrs))
-	for i, attr := range attrs {
-		normalized[i] = errAttr(attr)
-	}
-	return normalized
 }
