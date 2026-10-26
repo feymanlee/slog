@@ -61,11 +61,11 @@ func TestLoggerUseFormatterDoesNotAffectOtherLoggers(t *testing.T) {
 	if !strings.Contains(formattedBuf.String(), "error.message=boom") {
 		t.Fatalf("expected formatter on selected logger, got %q", formattedBuf.String())
 	}
-	if strings.Contains(plainBuf.String(), "error.message=boom") {
-		t.Fatalf("expected plain logger to remain unformatted, got %q", plainBuf.String())
+	if !strings.Contains(plainBuf.String(), "error.message=boom") {
+		t.Fatalf("expected plain logger to expand error attributes, got %q", plainBuf.String())
 	}
-	if !strings.Contains(plainBuf.String(), "error=boom") {
-		t.Fatalf("expected plain logger to keep original error attr, got %q", plainBuf.String())
+	if !strings.Contains(plainBuf.String(), "error.stacktrace=") {
+		t.Fatalf("expected plain logger to include error stack, got %q", plainBuf.String())
 	}
 }
 
